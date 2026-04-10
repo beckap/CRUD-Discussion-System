@@ -15,7 +15,7 @@ import entityClasses.ReplyStorage;
 import entityClasses.User;
 
 /**
- * <p><b>Class:</b> TestCases (JUnit)
+ * <p><b>Class:</b> StudentDiscussionTests (JUnit)
  * </p>
  * 
  * <p><b>Responsibilities:</b></p>
@@ -50,7 +50,7 @@ import entityClasses.User;
  * @author Hannah Henderson
  * @version 1.1 Added documentation
  */
-class TestCases {
+class StudentDiscussionTests {
 	
 	/**
 	 * Test #1: No error for OK post
