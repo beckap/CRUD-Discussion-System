@@ -1,0 +1,13 @@
+bin/
+doc/
+*.class
+.DS_Store
+.metadata/
+
+# Ignore Eclipse-specific configuration
+.classpath
+.project
+.settings/
+
+# Keep the JARs
+!lib/*.jar
