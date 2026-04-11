@@ -176,7 +176,7 @@ public class ControllerPostReplies {
 		
 		threeDotsPost.setText("...");
 		
-		// Only show edit/delete options if the current user owns the post or it is a staff
+		// Only show edit/delete options if the current user owns the post or if is a staff
 		if(selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName()) || 
 				ViewPostReplies.theUser.getNewStaffRole()) {
 			ViewPostReplies.postLayout.getChildren().addAll(ViewPostReplies.postLabel, threeDotsPost);

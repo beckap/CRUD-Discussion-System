@@ -13,10 +13,8 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import database.Database;
 import entityClasses.User;
 
@@ -77,6 +75,7 @@ public class ViewStaffHome {
 	protected static ComboBox <String> combobox_SelectRole = new ComboBox <String>();
 	protected static String [] roles = {"Staff", "Student"};
 	protected static Button button_SendInvitation = new Button("Send Invitation");
+	protected static Button button_Discussion = new Button("Discussion");
 	protected static Alert alertEmailError = new Alert(AlertType.INFORMATION);
 	protected static Alert alertEmailSent = new Alert(AlertType.INFORMATION);
 		
@@ -238,9 +237,14 @@ public class ViewStaffHome {
 			ControllerStaffHome.setOnetimePassword();
 		});
 
-		setupButtonUI(button_ListUsers, 250, Pos.CENTER, 300, 370);
+		setupButtonUI(button_ListUsers, 250, Pos.CENTER, 300, 330);
 		button_ListUsers.setOnAction((_) -> {
 			ControllerStaffHome.listUsers();
+		});
+		
+		setupButtonUI(button_Discussion, 250, Pos.CENTER, 300, 390);
+		button_Discussion.setOnAction((_) -> {
+			ControllerStaffHome.performDiscussions();
 		});
 
 		// GUI Area 3
@@ -274,7 +278,7 @@ public class ViewStaffHome {
 				label_Invitations, 
 	    		label_InvitationEmailAddress, text_InvitationEmailAddress,
 	    		combobox_SelectRole, button_SendInvitation,
-				line_Separator3, line_Separator4, button_SetOnetimePassword, button_ListUsers, 
+				line_Separator3, line_Separator4, button_SetOnetimePassword, button_Discussion, button_ListUsers, 
 				button_Logout, button_Quit);
 	}
 

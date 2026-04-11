@@ -174,6 +174,22 @@ public class ControllerStaffHome {
 		}
 		return "";
 	}
+	
+	/**********
+	 * <p>
+	 * 
+	 * Title: performDiscussions() Method.
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Protected method that displays the discussion page after
+	 * 	button is clicked.
+	 * </p>
+	 */
+	protected static void performDiscussions() {
+		guiDiscussionSystem.ViewDiscussionSystem.displayDiscussionSystem(ViewStaffHome.theStage, ViewStaffHome.theUser);
+		
+	}
 
 	/**********
 	 * <p>
