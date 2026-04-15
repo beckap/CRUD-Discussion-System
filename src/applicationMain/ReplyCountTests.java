@@ -14,7 +14,7 @@ import entityClasses.ReplyStorage;
 import entityClasses.User;
 
 /**
- * <p><b>Class:</b> ReplyCountPrototypeTests (JUnit)
+ * <p><b>Class:</b> ReplyCountTests (JUnit)
  * </p>
  * 
  * <p><b>Responsibilities:</b></p>
@@ -34,7 +34,7 @@ import entityClasses.User;
  * @author Becka Perez Guerrero
  * @version 1.0 Initial version
  */
-class ReplyCountPrototypeTests {
+class ReplyCountTests {
 	
 	/***
 	 * Student user for testing
