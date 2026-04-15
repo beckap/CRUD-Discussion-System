@@ -65,8 +65,8 @@ class CharacterCountAnalyzerTest {
 	@Test
 	void testValidInputCountWithSpaces() {
 		CharacterCountAnalyzer analyzer = new CharacterCountAnalyzer();
-		analyzer.setInput("Hello world");
-		assertEquals(11, analyzer.getCharacterCount());
+		analyzer.setInput("You just lost the game");
+		assertEquals(22, analyzer.getCharacterCount());
 	}
 	
 	/**

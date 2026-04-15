@@ -123,7 +123,7 @@ public class Database {
 	private void createTables() throws SQLException {
 		// Create the user database
 		String userTable = "CREATE TABLE IF NOT EXISTS userDB (" + "id INT AUTO_INCREMENT PRIMARY KEY, "
-				+ "userName VARCHAR(255) UNIQUE, " + "password VARCHAR(255), " + "firstName VARCHAR(255), "
+				+ "userName VARCHAR(255) UNIQUE, " + "password VARBINARY(255), " + "firstName VARCHAR(255), "
 				+ "middleName VARCHAR(255), " + "lastName VARCHAR (255), " + "preferredFirstName VARCHAR(255), "
 				+ "emailAddress VARCHAR(255), " + "adminRole BOOL DEFAULT FALSE, " + "newRole1 BOOL DEFAULT FALSE, "
 				+ "newRole2 BOOL DEFAULT FALSE)";
@@ -140,8 +140,8 @@ public class Database {
 
 		// Create the one-time password table
 		String oneTimePasswordTable = "CREATE TABLE IF NOT EXISTS OneTimePasswords ("
-				+ "userName VARCHAR(255) PRIMARY KEY, " + "tempPassword VARCHAR(255), "
-				+ "originalPassword VARCHAR(255))";
+				+ "userName VARCHAR(255) PRIMARY KEY, " + "tempPassword VARBINARY(255), "
+				+ "originalPassword VARBINARY(255))";
 		statement.execute(oneTimePasswordTable);
 		
 		String postsTable = "CREATE TABLE IF NOT EXISTS Posts (postID BIGINT AUTO_INCREMENT PRIMARY KEY, creationDate VARCHAR(255),"
@@ -224,7 +224,7 @@ public class Database {
 	public void register(User user) throws SQLException {
 		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
 				+ "lastName, preferredFirstName, emailAddress, adminRole, newRole1, newRole2) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "VALUES (?, HASH('SHA-256', CAST(? AS VARBINARY), 1024), ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
 			currentUsername = user.getUserName();
 			pstmt.setString(1, currentUsername);
@@ -356,98 +356,29 @@ public class Database {
 
 	/*******
 	 * <p>
-	 * Method: boolean loginAdmin(User user)
+	 * Method: boolean authenticateUser(String username, String plaintextPassword)
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: Check to see that a user with the specified username, password,
-	 * and role is the same as a row in the table for the username, password, and
-	 * role.
+	 * Description: Check if a user with the specified username and password exists in the database.
 	 * </p>
 	 * 
-	 * @param user specifies the specific user that should be logged in playing the
-	 *             Admin role.
+	 * @param username The username as typed in by the user.
+	 * @param plaintextPassword The password as typed in by the user.
 	 * 
-	 * @return true if the specified user has been logged in as an Admin else false.
-	 * 
+	 * @return True if the specified username and password are a valid combination.
 	 */
-	public boolean loginAdmin(User user) {
-		// Validates an admin user's login credentials so the user can login in as an
-		// Admin.
-		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND " + "adminRole = TRUE";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setString(1, user.getUserName());
-			pstmt.setString(2, user.getPassword());
-			ResultSet rs = pstmt.executeQuery();
-			return rs.next(); // If a row is returned, rs.next() will return true
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	/*******
-	 * <p>
-	 * Method: boolean loginStaff(User user)
-	 * </p>
-	 * 
-	 * <p>
-	 * Description: Check to see that a user with the specified username, password,
-	 * and role is the same as a row in the table for the username, password, and
-	 * role.
-	 * </p>
-	 * 
-	 * @param user specifies the specific user that should be logged in playing the
-	 *             Staff role.
-	 * 
-	 * @return true if the specified user has been logged in as Staff else
-	 *         false.
-	 * 
-	 */
-	public boolean loginStaff(User user) {
-		// Validates a student user's login credentials.
-		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND " + "newRole1 = TRUE";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setString(1, user.getUserName());
-			pstmt.setString(2, user.getPassword());
-			ResultSet rs = pstmt.executeQuery();
-			return rs.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	/*******
-	 * <p>
-	 * Method: boolean loginStudent(User user)
-	 * </p>
-	 * 
-	 * <p>
-	 * Description: Check to see that a user with the specified username, password,
-	 * and role is the same as a row in the table for the username, password, and
-	 * role.
-	 * </p>
-	 * 
-	 * @param user specifies the specific user that should be logged in playing the
-	 *             Student role.
-	 * 
-	 * @return true if the specified user has been logged in as Student else
-	 *         false.
-	 * 
-	 */
-	// Validates a student user's login credentials.
-	public boolean loginStudent(User user) {
-		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND " + "newRole2 = TRUE";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setString(1, user.getUserName());
-			pstmt.setString(2, user.getPassword());
-			ResultSet rs = pstmt.executeQuery();
-			return rs.next();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return false;
+	public boolean authenticateUser(String username, String plaintextPassword) {
+	    String query = "SELECT * FROM userDB WHERE userName = ? AND password = HASH('SHA-256', CAST(? AS VARBINARY), 1024)";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, username);
+	        pstmt.setString(2, plaintextPassword);
+	        ResultSet rs = pstmt.executeQuery();
+	        return rs.next(); // Return true if hash matches
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return false;
 	}
 
 	/*******
@@ -606,7 +537,7 @@ public class Database {
 					pstmt2.executeUpdate();
 				}
 				// Update the user's password to the temporary password
-				String update = "UPDATE userDB SET password = ? WHERE userName = ?";
+				String update = "UPDATE userDB SET password = HASH('SHA-256', CAST(? AS VARBINARY), 1024) WHERE userName = ?";
 				try (PreparedStatement pstmt3 = connection.prepareStatement(update)) {
 					pstmt3.setString(1, tempPassword);
 					pstmt3.setString(2, username);
@@ -1138,7 +1069,7 @@ public class Database {
 	 */
 	// update the password
 	public void updatePassword(String username, String password) {
-		String query = "UPDATE userDB SET password = ? WHERE username = ?";
+		String query = "UPDATE userDB SET password = HASH('SHA-256', CAST(? AS VARBINARY), 1024) WHERE username = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, password);
 			pstmt.setString(2, username);

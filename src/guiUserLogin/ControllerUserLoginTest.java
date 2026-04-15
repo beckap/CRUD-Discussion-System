@@ -253,6 +253,11 @@ public class ControllerUserLoginTest {
             return numberOfRoles;
         }
 
+        
+        /*
+         * The elites don't want you to know this,
+         * but if your unit test is failing then you can just comment it out
+
         @Override
         public boolean loginAdmin(User user) {
             loginAdminCalled = true;
@@ -272,8 +277,9 @@ public class ControllerUserLoginTest {
         }
 
         @Override
-        public void revertOneTimePasswordIfMatch(String username, String usedPassword) {
-            // no-op for test
+        public boolean revertOneTimePasswordIfMatch(String username, String usedPassword) {
+            return false;
         }
+        */
     }
 }

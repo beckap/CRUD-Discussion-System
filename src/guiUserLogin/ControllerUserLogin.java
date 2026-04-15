@@ -73,75 +73,48 @@ public class ControllerUserLogin {
 	 * 
 	 */
 	protected static void doLogin(Stage ts) {
-		theStage = ts;
-		String username = ViewUserLogin.text_Username.getText();
-		String password = ViewUserLogin.text_Password.getText();
-		boolean loginResult = false;
+	    theStage = ts;
+	    String username = ViewUserLogin.text_Username.getText();
+	    String password = ViewUserLogin.text_Password.getText();
 
-		// Fetch the user and verify the username
-		if (theDatabase.getUserAccountDetails(username) == false) {
-			// Don't provide too much information. Don't say the username is invalid or the
-			// password is invalid. Just say the pair is invalid.
-			ViewUserLogin.alertUsernamePasswordError.setContentText("Incorrect username/password. Try again!");
-			ViewUserLogin.alertUsernamePasswordError.showAndWait();
-			return;
-		}
-		// System.out.println("*** Username is valid");
+	    // Secure user authentication using password hash (SQL HASH function provided by H2, SHA-256)
+	    if (!theDatabase.authenticateUser(username, password)) {
+	        ViewUserLogin.alertUsernamePasswordError.setContentText("Incorrect username/password. Try again!");
+	        ViewUserLogin.alertUsernamePasswordError.showAndWait();
+	        return;
+	    }
 
-		// Check to see that the login password matches the account password
-		String actualPassword = theDatabase.getCurrentPassword();
+	    // ========== User is assumed to be authenticated below this point! ==========
+	    
+	    if (!theDatabase.getUserAccountDetails(username)) {
+	        System.out.println("Error: Could not retrieve account details for authenticated user.");
+	        return;
+	    }
 
-		if (password.compareTo(actualPassword) != 0) {
-			ViewUserLogin.alertUsernamePasswordError.setContentText("Incorrect username/password. Try again!");
-			ViewUserLogin.alertUsernamePasswordError.showAndWait();
-			return;
-		}
-		// System.out.println("*** Password is valid for this user");
+	    User user = new User(username, password, theDatabase.getCurrentFirstName(), theDatabase.getCurrentMiddleName(),
+	            theDatabase.getCurrentLastName(), theDatabase.getCurrentPreferredFirstName(),
+	            theDatabase.getCurrentEmailAddress(), theDatabase.getCurrentAdminRole(),
+	            theDatabase.getCurrentNewStaffRole(), theDatabase.getCurrentNewStudentRole());
 
-		// Establish this user's details
-		User user = new User(username, password, theDatabase.getCurrentFirstName(), theDatabase.getCurrentMiddleName(),
-				theDatabase.getCurrentLastName(), theDatabase.getCurrentPreferredFirstName(),
-				theDatabase.getCurrentEmailAddress(), theDatabase.getCurrentAdminRole(),
-				theDatabase.getCurrentNewStaffRole(), theDatabase.getCurrentNewStudentRole());
-
-		// See which home page dispatch to use
-		int numberOfRoles = theDatabase.getNumberOfRoles(user);
-		// System.out.println("*** The number of roles: "+ numberOfRoles);
-		if (numberOfRoles == 1) {
-			// Single Account Home Page - The user has no choice here
-
-			// Admin role
-			if (user.getAdminRole()) {
-				loginResult = theDatabase.loginAdmin(user);
-				if (loginResult) {
-					// If this login used a one-time password, revert it now
-					theDatabase.revertOneTimePasswordIfMatch(username, password);
-					guiAdminHome.ViewAdminHome.displayAdminHome(theStage, user);
-				}
-			} else if (user.getNewStaffRole()) {
-				loginResult = theDatabase.loginStaff(user);
-				if (loginResult) {
-					theDatabase.revertOneTimePasswordIfMatch(username, password);
-					guiStaff.ViewStaffHome.displayStaffHome(theStage, user);
-				}
-			} else if (user.getNewStudentRole()) {
-				loginResult = theDatabase.loginStudent(user);
-				if (loginResult) {
-					theDatabase.revertOneTimePasswordIfMatch(username, password);
-					guiStudent.ViewStudentHome.displayStudentHome(theStage, user);
-				}
-				// Other roles
-			} else {
-				System.out.println("***** UserLogin goToUserHome request has an invalid role");
-			}
-		} else if (numberOfRoles > 1) {
-			// Multiple Account Home Page - The user chooses which role to play
-			// System.out.println("*** Going to displayMultipleRoleDispatch");
-			// If a one-time password was used for this login, revert it now so it cannot be
-			// reused
-			theDatabase.revertOneTimePasswordIfMatch(username, password);
-			guiMultipleRoleDispatch.ViewMultipleRoleDispatch.displayMultipleRoleDispatch(theStage, user);
-		}
+	    // See which home page dispatch to use
+	    int numberOfRoles = theDatabase.getNumberOfRoles(user);
+	    
+	    // Page routing and OTP revert
+	    if (numberOfRoles == 1) {
+	        theDatabase.revertOneTimePasswordIfMatch(username, password);
+	        if (user.getAdminRole()) {
+	            guiAdminHome.ViewAdminHome.displayAdminHome(theStage, user);
+	        } else if (user.getNewStaffRole()) {
+	            guiStaff.ViewStaffHome.displayStaffHome(theStage, user);
+	        } else if (user.getNewStudentRole()) {
+	            guiStudent.ViewStudentHome.displayStudentHome(theStage, user);
+	        } else {
+	            System.out.println("**** Invalid role!");
+	        }
+	    } else if (numberOfRoles > 1) {
+	        theDatabase.revertOneTimePasswordIfMatch(username, password);
+	        guiMultipleRoleDispatch.ViewMultipleRoleDispatch.displayMultipleRoleDispatch(theStage, user);
+	    }
 	}
 
 	/**********

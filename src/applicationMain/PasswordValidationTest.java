@@ -22,7 +22,7 @@ class PasswordValidationTest {
 	
 	@Test
 	public void testPasswordTooLong() {
-		String testResult = PasswordValidation.checkForValidPassword("PWRdn[CPZ0},MGx^UE@tkgt]Ry2d[c]GqVtkL1aN^7;l*N?pR<=YnaG}8CeHeIE2}\n");
+		String testResult = PasswordValidation.checkForValidPassword("PWRdn[CPZ0},MGx^UE@tkgt]Ry2d[c]GqVtkL1aN^7;l*N?pR<=YnaG}8CeHeIE2}\nYouJustLostTheGame");
 		assertEquals("Must be at most 64 characters", testResult);
 	}
 	
