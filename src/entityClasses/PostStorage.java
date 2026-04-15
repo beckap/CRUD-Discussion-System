@@ -80,6 +80,31 @@ public class PostStorage {
 	public PostStorage(Database db) {
 		this.theDatabase = db;
 	}
+
+	/*****
+	 * <p>Method: resolvePostTypeForSubmission(PostType defaultType, PostType selectedType)</p>
+	 *
+	 * <p>
+	 * Description: Resolves the final post type that should be submitted.
+	 * If a user selected a type, that explicit selection is preserved.
+	 * Otherwise, the configured default type is used.
+	 *
+	 * This helper centralizes TP3 selection resolution so controller code and tests
+	 * can validate a single source of truth for post type persistence behavior.
+	 * </p>
+	 *
+	 * @param defaultType configured default type for new posts
+	 * @param selectedType currently selected type, if any
+	 * @return selectedType when present; otherwise defaultType
+	 */
+	public static PostType resolvePostTypeForSubmission(PostType defaultType, PostType selectedType) {
+		// Preserve user intent whenever an explicit selection exists.
+		if (selectedType != null) {
+			return selectedType;
+		}
+
+		return defaultType;
+	}
 	
 	/*****
 	 * 
