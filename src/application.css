@@ -311,8 +311,8 @@
     -fx-border-color: #1e2124;
 }
 
-.progress-indicator:hover {
-	-fx-progress-color: #677BC4;
+.progress-indicator {
+	-fx-progress-color: #7289da;
 }
 
 .progress-indicator .spinner:hover {
