@@ -312,7 +312,7 @@ public class Database {
 	public List<String> getStudentUserList() {
 		List<String> userList = new ArrayList<String>();
 		userList.add("<Select a User>");
-		String query = "SELECT userName FROM userDB WHERE adminRole = FALSE OR newRole1 = FALSE";
+		String query = "SELECT userName FROM userDB WHERE adminRole = FALSE AND newRole1 = FALSE";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {

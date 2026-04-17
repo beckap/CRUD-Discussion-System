@@ -26,7 +26,7 @@ import entityClasses.User;
  * </p>
  * 
  * 
- * @author Diogo Oliveira Moscato
+ * @author Diogo Oliveira Moscato, Becka Perez Guerrero
  * 
  * @version 1.00 2026-01-31 Initial version
  * @version 2.00 2026-02-09 Shows specific list combo box based on role 

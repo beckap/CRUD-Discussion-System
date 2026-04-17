@@ -149,4 +149,19 @@ public class ReplyAnalyzer {
 		}
 		return false;
 	}
+	
+	/***
+	 * Evaluates the student participation percentage.
+	 * 
+	 * <p><b>Purpose:</b></p>
+	 * <p>
+	 * The participation requirement is satisfied if the specific student has a 1.0 or more
+	 * participation progress. This is used to show the percentage of progress.
+	 * </p>
+	 * 
+	 * @return double value describing progress of student participation
+	 */
+	public double getParticipationProgress() {
+		return participationProgress / 3.0;
+	}
 }

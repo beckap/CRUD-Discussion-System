@@ -1,24 +1,66 @@
 package guiGradingDashboard;
 
+import database.Database;
+import entityClasses.AnalyzerException;
+import entityClasses.ReplyAnalyzer;
+import entityClasses.ReplyStorage;
+import javafx.collections.FXCollections;
 
-
+/*******
+ * <p>
+ * Title: ControllerGradingDashboard Class.
+ * </p>
+ * 
+ * <p>
+ * Description:
+ * </p>
+ * 
+ * 
+ * @author Becka Perez Guerrero
+ * 
+ * @version 1.00 2026-04-16 Initial version
+ * 
+ */
 public class ControllerGradingDashboard {
+	
+	/***
+	 * Reference to database so package has access to methods
+	 */
+	protected static Database theDatabase = applicationMain.FoundationsMain.database;
+	protected static ReplyStorage replyStorage = new ReplyStorage(theDatabase);
+	
+	/***
+	 * Default Constructor never used in this system.
+	 */
+	public ControllerGradingDashboard() {
+	}
+	
 	
 	/**********
 	 * <p>
 	 * Method: repaintTheWindow() </p>
 	 * 
 	 * <p> Description: This method determines the current state of the window and then
-	 * establishes the appropriate list of widgets in the Pane to show the proper
-	 * set of current values. </p>
+	 * establishes the components in the Pane to display the proper current data. 
+	 * </p>
 	 * 
 	 */
 	protected static void repaintTheWindow() {
 		// Clear what had been displayed
 		ViewGradingDashboard.theRootPane.getChildren().clear();
 		
+		// Reset ComboBox list
+		ViewGradingDashboard.students = ModelGradingDashboard.getUserList();
+		if (ViewGradingDashboard.students != null)
+			ViewGradingDashboard.comboStudents.setItems(FXCollections.observableArrayList(ViewGradingDashboard.students));
+		ViewGradingDashboard.comboStudents.getSelectionModel().selectFirst();
+		
+		addProgress(ViewGradingDashboard.comboStudents.getSelectionModel().getSelectedItem());
+		
 		// Define the view to show the user
-		ViewGradingDashboard.theRootPane.getChildren().addAll(ViewGradingDashboard.button_Return);
+		ViewGradingDashboard.theRootPane.getChildren().addAll(ViewGradingDashboard.labelPageTitle,
+				ViewGradingDashboard.labelSelect, ViewGradingDashboard.comboStudents, 
+				ViewGradingDashboard.studentProgress, ViewGradingDashboard.button_Return);
 
 		// Set the title for the window
 		ViewGradingDashboard.theStage.setTitle("Grading Dashboard");
@@ -26,7 +68,20 @@ public class ControllerGradingDashboard {
 		ViewGradingDashboard.theStage.show();
 	}
 	
-	
+	protected static void addProgress(String student) {
+		ReplyAnalyzer analyzer = null;
+		try {
+			analyzer = new ReplyAnalyzer(replyStorage, student);
+			double progressPercent = analyzer.getParticipationProgress();
+			ViewGradingDashboard.studentProgress.setProgress(progressPercent);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+			ViewGradingDashboard.error.setContentText("Error analyzing student participation.");
+			ViewGradingDashboard.error.setHeaderText(null);
+			ViewGradingDashboard.error.setTitle("Analyzing Error");
+			ViewGradingDashboard.error.show();
+		}
+	}
 	
 	/**********
 	 * <p> Method: performReturn() </p>

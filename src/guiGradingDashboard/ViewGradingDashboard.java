@@ -1,29 +1,19 @@
 package guiGradingDashboard;
 
-import entityClasses.Post;
-import entityClasses.PostCategory;
+import java.util.ArrayList;
+import java.util.List;
 import entityClasses.User;
-import guiDiscussionSystem.ControllerDiscussionSystem;
-import guiDiscussionSystem.ModelDiscussionSystem;
-import guiDiscussionSystem.ViewDiscussionSystem;
+import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
@@ -55,11 +45,20 @@ public class ViewGradingDashboard {
 	 */
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
-	protected static Label label_PageTitle = new Label();
+	protected static Label labelPageTitle = new Label();
+	protected static Label labelSelect = new Label();
 	
-
-	/***
-
+	/**
+	 * List of students for the comboBox
+	 */
+	protected static List<String> students = new ArrayList<String>();
+	
+	/**
+	 * ComboBox containing the list of students for the staff to choose from
+	 */
+	protected static ComboBox<String> comboStudents = new ComboBox<String>();
+	protected static ProgressIndicator studentProgress = new ProgressIndicator();
+	
 	/***
 	 * This is a separator and it is used to partition the GUI for various tasks
 	 */
@@ -139,18 +138,41 @@ public class ViewGradingDashboard {
 	public ViewGradingDashboard() {
 		theRootPane = new Pane();
 		theGradingDashboardScene = new Scene(theRootPane, width, height);
-
+		labelPageTitle.setText("Grading Dashboard");
+		setupLabelUI(labelPageTitle, width, Pos.CENTER, 0, 5);
+		labelSelect.setText("Select a student:");
+		setupLabelUI(labelSelect, 190, Pos.CENTER, 50, 80);
+		
+		students = ModelGradingDashboard.getUserList();
+		if (students != null) {
+			comboStudents.setItems(FXCollections.observableArrayList(students));
+		}
+		comboStudents.setLayoutX(80);
+		comboStudents.setLayoutY(100);
+		comboStudents.getSelectionModel().selectFirst();
+		
+		if (comboStudents.getSelectionModel().getSelectedItem() != null ||
+				!comboStudents.getSelectionModel().getSelectedItem().isEmpty() ||
+				!comboStudents.getSelectionModel().getSelectedItem().equals("<Select a User>")) {
+			ControllerGradingDashboard.addProgress(comboStudents.getSelectionModel().getSelectedItem());
+		}
+		studentProgress.setLayoutX(100);
+		studentProgress.setLayoutY(200);
+		studentProgress.setMinSize(150, 150);
+		
 		setupButtonUI(button_Return, 210, Pos.CENTER, 20, 540);
 		button_Return.setOnAction((_) -> {
 			ControllerGradingDashboard.performReturn();
 		});
 		
-		
 		String css = getClass().getResource("/application.css").toExternalForm();
 		theGradingDashboardScene.getStylesheets().add(css);
-		label_PageTitle.getStyleClass().add("title");
+		labelPageTitle.getStyleClass().add("title");
 		
-		theRootPane.getChildren().addAll(button_Return);
+		DialogPane error1 = error.getDialogPane();
+		error1.getStylesheets().add(css);
+		
+		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, button_Return);
 		theStage.setScene(theGradingDashboardScene);
 		theStage.show();
 		

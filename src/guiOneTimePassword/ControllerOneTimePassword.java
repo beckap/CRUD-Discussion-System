@@ -66,6 +66,9 @@ public class ControllerOneTimePassword {
 		ViewOneTimePassword.theStage.show();
 	}
 	
+	/***
+	 * Default constructor never used.
+	 */
 	public ControllerOneTimePassword() {
 	}
 

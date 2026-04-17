@@ -192,8 +192,6 @@ public class ViewUserLogin {
 		// CSS Styling for the page
 		String css = getClass().getResource("/application.css").toExternalForm();
 		theUserLoginScene.getStylesheets().add(css);
-		// sanity check - this just shows if the correct stylesheet file is loading in 
-		System.out.println("Stylesheets now = " + theUserLoginScene.getStylesheets());
 		
 		text_Username.getStyleClass().add("text-fields");
 		text_Password.getStyleClass().add("text-fields");
