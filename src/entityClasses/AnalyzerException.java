@@ -12,6 +12,7 @@ package entityClasses;
  * empty usernames provided.
  * </p>
  */
+@SuppressWarnings("serial")
 public class AnalyzerException extends Exception {
 	/**
 	 * Default constructor of the class

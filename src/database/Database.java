@@ -272,6 +272,9 @@ public class Database {
 	 * starting with "<Select User>" at the start of the list.
 	 * </p>
 	 * 
+	 * @param includeAdmin	this tells the method whether to include the admins or not.
+	 * 
+	 * 
 	 * @return a list of userNames found in the database.
 	 */
 	public List<String> getUserList(boolean includeAdmin) {
@@ -290,6 +293,34 @@ public class Database {
 			return null;
 		}
 //		System.out.println(userList);
+		return userList;
+	}
+	
+	/*******
+	 * <p>
+	 * Method: List getStudentUserList()
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Generate a List of Strings, one for each student in the database,
+	 * starting with "<Select User>" at the start of the list. This list contains the 
+	 * usernames of the students, not an actual User object.
+	 * </p>
+	 * 
+	 * @return a list of the student usernames found in the database.
+	 */
+	public List<String> getStudentUserList() {
+		List<String> userList = new ArrayList<String>();
+		userList.add("<Select a User>");
+		String query = "SELECT userName FROM userDB WHERE adminRole = FALSE OR newRole1 = FALSE";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				userList.add(rs.getString("userName"));
+			}
+		} catch (SQLException e) {
+			return null;
+		}
 		return userList;
 	}
 
