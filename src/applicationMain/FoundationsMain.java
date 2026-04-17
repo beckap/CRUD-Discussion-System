@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.DialogPane;
 import javafx.scene.text.Font;
 
 /*******
@@ -85,6 +86,8 @@ public class FoundationsMain extends Application {
 		
 		// Load fonts
 		Font.loadFont(getClass().getResource("/fonts/InterVariable.ttf").toExternalForm(), 12);
+		DialogPane errorPane = databaseInUse.getDialogPane();
+		errorPane.getStylesheets().add(getClass().getResource("/application.css").toExternalForm());
 				
 		// Connect to the in-memory database
 		try {

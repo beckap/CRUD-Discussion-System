@@ -163,6 +163,16 @@ public class ReplyAnalyzer {
 	 */
 	public double getParticipationProgress() {
 		participationProgress = countUniqueReplies();
-		return participationProgress / 3.0;
+		double progress = participationProgress / 3.0;
+		
+		// If progress is less than 0, set to 0
+		if (progress < 0) 
+			progress = 0;
+		
+		// If progress is more than one, so above 3 replies, set to 1
+	    if (progress > 1) 
+	    	progress = 1;
+	    
+		return progress;
 	}
 }

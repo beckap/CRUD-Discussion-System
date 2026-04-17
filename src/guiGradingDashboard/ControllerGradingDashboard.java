@@ -45,6 +45,7 @@ public class ControllerGradingDashboard {
 	 * </p>
 	 * 
 	 */
+	@SuppressWarnings("null")
 	protected static void repaintTheWindow() {
 		// Clear what had been displayed
 		ViewGradingDashboard.theRootPane.getChildren().clear();
@@ -54,13 +55,32 @@ public class ControllerGradingDashboard {
 		if (ViewGradingDashboard.students != null)
 			ViewGradingDashboard.comboStudents.setItems(FXCollections.observableArrayList(ViewGradingDashboard.students));
 		ViewGradingDashboard.comboStudents.getSelectionModel().selectFirst();
+		ViewGradingDashboard.studentProgress.setProgress(0);
 		
-		addProgress(ViewGradingDashboard.comboStudents.getSelectionModel().getSelectedItem());
+		ViewGradingDashboard.comboStudents.setOnAction((_) -> {
+			String studentUsername = ViewGradingDashboard.comboStudents.getSelectionModel().getSelectedItem();
+			
+			// Check if the selected username is null first
+			if (studentUsername == null) {
+				return;
+			}
+			
+			// Check if the selected username is empty
+			if (studentUsername.isEmpty()) {
+				return;
+			} 
+		
+			// Check if the selected option is not the default option, then update
+			// progress bar
+			if (!studentUsername.equals("<Select a User>")) {
+				ControllerGradingDashboard.addProgress(studentUsername);
+			}
+		});
 		
 		// Define the view to show the user
 		ViewGradingDashboard.theRootPane.getChildren().addAll(ViewGradingDashboard.labelPageTitle,
 				ViewGradingDashboard.labelSelect, ViewGradingDashboard.comboStudents, 
-				ViewGradingDashboard.studentProgress, ViewGradingDashboard.button_Return);
+				ViewGradingDashboard.studentProgress, ViewGradingDashboard.button_Return, ViewGradingDashboard.button_Logout);
 
 		// Set the title for the window
 		ViewGradingDashboard.theStage.setTitle("Grading Dashboard");
@@ -74,6 +94,7 @@ public class ControllerGradingDashboard {
 			analyzer = new ReplyAnalyzer(replyStorage, student);
 			double progressPercent = analyzer.getParticipationProgress();
 			ViewGradingDashboard.studentProgress.setProgress(progressPercent);
+			ViewGradingDashboard.studentProgress.requestLayout();
 		} catch (AnalyzerException e) {
 			e.printStackTrace();
 			ViewGradingDashboard.error.setContentText("Error analyzing student participation.");

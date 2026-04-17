@@ -311,11 +311,23 @@
     -fx-border-color: #1e2124;
 }
 
+.progress-indicator:hover {
+	-fx-progress-color: #677BC4;
+}
+
+.progress-indicator .spinner:hover {
+	-fx-progress-color: #677BC4;
+}
+
 .progress-indicator .indicator {
-    -fx-background-color: transparent;
+    -fx-background-color: #2f3136;
     -fx-border-color: #1e2124;
 }
 
+.progress-indicator .indicator:hover {
+	-fx-background-color: #232528;
+    -fx-border-color: #455db3;
+}
 .progress-indicator .percentage {
     -fx-fill: white;
     -fx-font-size: 14px;

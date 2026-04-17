@@ -57,7 +57,7 @@ public class ViewGradingDashboard {
 	 * ComboBox containing the list of students for the staff to choose from
 	 */
 	protected static ComboBox<String> comboStudents = new ComboBox<String>();
-	protected static ProgressIndicator studentProgress = new ProgressIndicator();
+	protected static ProgressIndicator studentProgress = new ProgressIndicator(0);
 	
 	/***
 	 * This is a separator and it is used to partition the GUI for various tasks
@@ -68,7 +68,11 @@ public class ViewGradingDashboard {
 	 * This button is used to return to the previous page, usually the Staff home page
 	 */
 	protected static Button button_Return = new Button("Return");
-
+	
+	/**
+	 * This button is used to logout
+	 */
+	protected static Button button_Logout = new Button("Logout");
 	/***
 	 * These attributes are used to configure the page and populate it with this
 	 * user's information
@@ -135,10 +139,11 @@ public class ViewGradingDashboard {
 	 * </p>
 	 * 
 	 */
+	@SuppressWarnings("null")
 	public ViewGradingDashboard() {
 		theRootPane = new Pane();
 		theGradingDashboardScene = new Scene(theRootPane, width, height);
-		labelPageTitle.setText("Grading Dashboard");
+		labelPageTitle.setText("Student Participation");
 		setupLabelUI(labelPageTitle, width, Pos.CENTER, 0, 5);
 		labelSelect.setText("Select a student:");
 		setupLabelUI(labelSelect, 190, Pos.CENTER, 50, 80);
@@ -151,18 +156,38 @@ public class ViewGradingDashboard {
 		comboStudents.setLayoutY(100);
 		comboStudents.getSelectionModel().selectFirst();
 		
-		if (comboStudents.getSelectionModel().getSelectedItem() != null ||
-				!comboStudents.getSelectionModel().getSelectedItem().isEmpty() ||
-				!comboStudents.getSelectionModel().getSelectedItem().equals("<Select a User>")) {
-			ControllerGradingDashboard.addProgress(comboStudents.getSelectionModel().getSelectedItem());
-		}
-		studentProgress.setLayoutX(100);
-		studentProgress.setLayoutY(200);
-		studentProgress.setMinSize(150, 150);
+		comboStudents.setOnAction((_) -> {
+			String studentUsername = comboStudents.getSelectionModel().getSelectedItem();
+			
+			// Check if the selected username is null first
+			if (studentUsername == null) {
+				return;
+			}
+			
+			// Check if the selected username is empty
+			if (studentUsername.isEmpty()) {
+				return;
+			} 
+		
+			// Check if the selected option is not the default option, then update
+			// progress bar
+			if (!studentUsername.equals("<Select a User>")) {
+				ControllerGradingDashboard.addProgress(studentUsername);
+			}
+		});
+		
+		studentProgress.setLayoutX(80);
+		studentProgress.setLayoutY(170);
+		studentProgress.setMinSize(220, 220);
 		
 		setupButtonUI(button_Return, 210, Pos.CENTER, 20, 540);
 		button_Return.setOnAction((_) -> {
 			ControllerGradingDashboard.performReturn();
+		});
+		
+		setupButtonUI(button_Logout, 210, Pos.CENTER, 300, 540);
+		button_Logout.setOnAction((_) -> {
+			ControllerGradingDashboard.performLogout();
 		});
 		
 		String css = getClass().getResource("/application.css").toExternalForm();
@@ -172,7 +197,8 @@ public class ViewGradingDashboard {
 		DialogPane error1 = error.getDialogPane();
 		error1.getStylesheets().add(css);
 		
-		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, button_Return);
+		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, button_Return,
+				button_Logout);
 		theStage.setScene(theGradingDashboardScene);
 		theStage.show();
 		
