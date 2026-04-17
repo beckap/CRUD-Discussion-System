@@ -232,7 +232,7 @@ public class ViewPostReplies {
 		postLabel.setText(ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
 		postLabel.setStyle("-fx-font-size: 16px");
 		postLabel.setWrapText(true);
-		postLabel.setPrefWidth(600);
+		postLabel.setPrefWidth(500);
 		
 		// Sets the scrollPane layout and content.
 		scrollPanePostContent.setContent(postLayout);

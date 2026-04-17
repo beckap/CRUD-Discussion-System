@@ -36,7 +36,7 @@ import java.time.LocalDateTime;
  * @version 1.02 2026-03-19 Updated version with proper Javadoc documentation.
  * 
  * @author Hannah Henderson
- * @version 1.03 2026-03-21 Added read receipt tracking
+ * @version 1.03 2026-03-21 Added read receipublishTime tracking
  */
 public class Reply {
 	/**
@@ -50,6 +50,8 @@ public class Reply {
 	private boolean isEdited = false;
 	private boolean isDeleted = false;
 	private boolean isReadByPostAuthor = false;
+	private int visibilityLevel = 0;
+	private long publishTime = 0;
 	
 	/*****
 	 * <p>
@@ -57,7 +59,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This constructor is used to establish initial reply objects.
+	 * DescripublishTimeion: This constructor is used to establish initial reply objects.
 	 * </p>
 	 * 
 	 * @param id	   specifies the id of reply 
@@ -85,7 +87,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This constructor is used to establish reply objects with update attributes.
+	 * DescripublishTimeion: This constructor is used to establish reply objects with update attributes.
 	 * </p>
 	 * 
 	 * @param id	   specifies the id of reply 
@@ -106,7 +108,7 @@ public class Reply {
 	 * 
 	 */
 	public Reply(long id, long postId, String date, String content, String authorUsername, 
-			boolean isEdited, boolean isDeleted, boolean isReadByPostAuthor) {
+			boolean isEdited, boolean isDeleted, boolean isReadByPostAuthor, int visibilityLevel, long publishTime) {
 		this.replyId = id;
 		this.postId = postId;
 		this.content = content;
@@ -115,6 +117,8 @@ public class Reply {
 		this.isEdited = isEdited;
 		this.isDeleted = isDeleted;
 		this.isReadByPostAuthor = isReadByPostAuthor;
+		this.visibilityLevel = visibilityLevel;
+		this.publishTime = publishTime;
 	}
 	
 	/*****
@@ -123,7 +127,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This soft deletes the reply.
+	 * DescripublishTimeion: This soft deletes the reply.
 	 * </p>
 	 */
 	public void deleteReply() {
@@ -136,7 +140,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This edits the content of the reply.
+	 * DescripublishTimeion: This edits the content of the reply.
 	 * </p>
 	 * 
 	 * @param content specifies the new content
@@ -153,7 +157,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the reply's id.
+	 * DescripublishTimeion: This getter returns the reply's id.
 	 * </p>
 	 * 
 	 * @return a value for the ID of reply
@@ -168,7 +172,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the id of the post.
+	 * DescripublishTimeion: This getter returns the id of the post.
 	 * </p>
 	 * 
 	 * @return a value for the post ID
@@ -183,7 +187,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the content.
+	 * DescripublishTimeion: This getter returns the content.
 	 * </p>
 	 * 
 	 * @return content
@@ -198,7 +202,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the author's username.
+	 * DescripublishTimeion: This getter returns the author's username.
 	 * </p>
 	 * 
 	 * @return author's username
@@ -213,13 +217,33 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the date the reply was posted.
+	 * DescripublishTimeion: This getter returns the date the reply was posted.
 	 * </p>
 	 * 
 	 * @return date posted
 	 */
 	public LocalDateTime getDatePosted() {
 		return datePosted;
+	}
+	
+	// TODO JavaDoc
+	public int getVisibilityLevel() {
+		return this.visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public long getPublishTime() {
+		return this.publishTime;
+	}
+	
+	// TODO JavaDoc
+	public void setVisibilityLevel(int visibilityLevel) {
+		this.visibilityLevel = visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public void setPublishTime(long publishTime) {
+		this.publishTime = publishTime;
 	}
 
 	/*****
@@ -228,7 +252,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns a boolean.
+	 * DescripublishTimeion: This getter returns a boolean.
 	 * </p>
 	 * 
 	 * @return TRUE if the reply is edited or FALSE if not
@@ -243,7 +267,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns a boolean.
+	 * DescripublishTimeion: This getter returns a boolean.
 	 * </p>
 	 * 
 	 * @return TRUE if the reply is deleted or FALSE if not
@@ -258,7 +282,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns a boolean.
+	 * DescripublishTimeion: This getter returns a boolean.
 	 * </p>
 	 * 
 	 * @return TRUE if the reply is read by the post author or FALSE if not
@@ -273,7 +297,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This marks a reply as read by the post author.
+	 * DescripublishTimeion: This marks a reply as read by the post author.
 	 * </p>
 	 */
 	protected void markRead() {
@@ -286,7 +310,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This setter sets the content of Post.
+	 * DescripublishTimeion: This setter sets the content of Post.
 	 * </p>
 	 * 
 	 * @param content	new content
@@ -301,7 +325,7 @@ public class Reply {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This setter sets the reply id.
+	 * DescripublishTimeion: This setter sets the reply id.
 	 * </p>
 	 * 
 	 * @param long1		id

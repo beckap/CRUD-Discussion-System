@@ -473,5 +473,18 @@ public class PostStorage {
 		}
 		return null;
 	}
+
+	/*******
+	 * <p> Method: updatePostVisibility(long postId, int visibilityLevel) </p>
+	 * <p> Description: Updates the visibility level of a specific post. </p>
+	 */
+	public void updatePostVisibility(long postId, int visibilityLevel) {
+		try {
+			theDatabase.updatePostVisibility(postId, visibilityLevel);
+		} catch (Exception e) {
+			System.out.println("Error updating post visibility: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
 	
 }

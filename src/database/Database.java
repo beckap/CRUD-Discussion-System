@@ -77,7 +77,6 @@ public class Database {
 	 * </p>
 	 * 
 	 */
-
 	public Database() {
 
 	}
@@ -146,12 +145,14 @@ public class Database {
 		
 		String postsTable = "CREATE TABLE IF NOT EXISTS Posts (postID BIGINT AUTO_INCREMENT PRIMARY KEY, creationDate VARCHAR(255),"
 				+ " postType VARCHAR(255), title VARCHAR(255), postCategory VARCHAR(255), content VARCHAR(MAX)," +
-				" authorUsername VARCHAR(255), isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE)";
+				" authorUsername VARCHAR(255), isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE," +
+				" visibilityLevel INT DEFAULT 0, publishTime BIGINT DEFAULT 0)";
 		statement.execute(postsTable);
 		
 		String repliesTable = "CREATE TABLE IF NOT EXISTS Replies (replyID BIGINT AUTO_INCREMENT PRIMARY KEY, postID BIGINT, "
-				+ "creationDate VARCHAR(255)," + " content VARCHAR(MAX), authorUsername VARCHAR(255), "
-						+ "isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE, isReadByPostAuthor BOOL DEFAULT FALSE)";
+				+ "creationDate VARCHAR(255)," + " content VARCHAR(MAX), authorUsername VARCHAR(255), " +
+				"isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE, isReadByPostAuthor BOOL DEFAULT FALSE," +
+				" visibilityLevel INT DEFAULT 0, publishTime BIGINT DEFAULT 0)";
 		statement.execute(repliesTable);
 	}
 
@@ -440,6 +441,72 @@ public class Database {
 		if (user.getNewStudentRole())
 			numberOfRoles++;
 		return numberOfRoles;
+	}
+	
+	/*******
+	 * <p>
+	 * Method: int getUserPrivilegeLevel(String username)
+	 * </p>
+	 * * <p>
+	 * Description: Returns the privilege level for a given user.
+	 * 2 for Admin, 1 for Staff, 0 for Student.
+	 * </p>
+	 */
+	public int getUserPrivilegeLevel(String username) {
+		String query = "SELECT adminRole, newRole1, newRole2 FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				if (rs.getBoolean("adminRole")) return 2; // Admin
+				if (rs.getBoolean("newRole1")) return 1; // Staff
+				return 0; // Student
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0; // Default to lowest privilege if user not found
+	}
+	
+	/*******
+	 * <p>
+	 * Method: void updatePostVisibility(long postId, int visibilityLevel)
+	 * </p>
+	 * <p>
+	 * Description: Updates the visibility level of a specific post.
+	 * </p>
+	 * @throws SQLException
+	 * @param postId           id of the post
+	 * @param visibilityLevel  the visibility level
+	 * */
+	public void updatePostVisibility(long postId, int visibilityLevel) throws SQLException {
+		String query = "UPDATE Posts SET visibilityLevel = ? WHERE postID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, visibilityLevel);
+			pstmt.setLong(2, postId);
+			pstmt.executeUpdate();
+		}
+	}
+	
+	/*******
+	 * <p>
+	 * Method: void updateReplyVisibility(long replyId, int visibilityLevel)
+	 * </p>
+	 * <p>
+	 * Description: Updates the visibility level of a specific reply.
+	 * </p>
+	 * @throws SQLException
+	 * @param replyId          id of the reply
+	 * @param visibilityLevel  the visibility level
+	 * */
+	public void updateReplyVisibility(long replyId, int visibilityLevel) throws SQLException {
+		String query = "UPDATE Replies SET visibilityLevel = ? WHERE replyID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, visibilityLevel);
+			pstmt.setLong(2, replyId);
+			pstmt.executeUpdate();
+		}
 	}
 
 	/*******
@@ -1449,26 +1516,24 @@ public class Database {
 	 */
 	public void registerPost(Post post) throws SQLException {
 		String insertPost = "INSERT INTO Posts (creationDate, postType, title, postCategory, "
-				+ "content, authorUsername) "
-				+ "VALUES (?, ?, ?, ?, ?, ?)";
+				+ "content, authorUsername, visibilityLevel, publishTime) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = connection.prepareStatement(insertPost);
 		
 		pstmt.setString(1, post.getDate().toString());
-
 		pstmt.setString(2, post.getTypeOfPost().name());
-
 		pstmt.setString(3, post.getTitle());
-
 		pstmt.setString(4, post.getCategory().name());
-
 		pstmt.setString(5, post.getContent());
-
 		pstmt.setString(6, post.getAuthorUsername());
+		pstmt.setInt(7, post.getVisibilityLevel());
+		pstmt.setLong(8, post.getPublishTime());
+		
 		pstmt.executeUpdate();
 		
 		ResultSet rs = pstmt.getGeneratedKeys();
 		if (rs.next()) {
-		    post.setPostId(rs.getLong(1));
+			post.setPostId(rs.getLong(1));
 		}
 	}
 	
@@ -1485,20 +1550,31 @@ public class Database {
 	 */
 	public List<Post> getPostsList() {
 		List<Post> postsList = new ArrayList<Post>();
-		String query = "SELECT * FROM Posts";
+		
+		// Determine the privilege level of the currently logged-in user
+		int userPrivilege = currentAdminRole ? 2 : (currentNewStaffRole ? 1 : 0);
+		long currentTime = System.currentTimeMillis(); // UNIX time in milliseconds
+
+		// Filter based on visibility level and publish time
+		String query = "SELECT * FROM Posts WHERE visibilityLevel <= ? AND (publishTime <= ? OR authorUsername = ? OR ? >= 1)";
+		
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, userPrivilege);
+			pstmt.setLong(2, currentTime);
+			pstmt.setString(3, currentUsername);
+			pstmt.setInt(4, userPrivilege);
+			
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				Post newPost = new Post(rs.getLong("postID"), rs.getString("creationDate"), rs.getString("postType"),
 						rs.getString("title"), rs.getString("postCategory"), rs.getString("content"), 
-						rs.getString("authorUsername"), rs.getBoolean("isEdited"), rs.getBoolean("isDeleted"));
+						rs.getString("authorUsername"), rs.getBoolean("isEdited"), rs.getBoolean("isDeleted"),
+						rs.getInt("visibilityLevel"), rs.getLong("publishTime"));
 				postsList.add(newPost);
-				
 			}
 		} catch (SQLException e) {
 			return null;
 		}
-//		System.out.println(userList);
 		return postsList;
 	}
 	
@@ -1566,21 +1642,21 @@ public class Database {
 	 */
 	public void registerReply(Reply reply) throws SQLException {
 		String insertReply = "INSERT INTO Replies (postID, creationDate, "
-				+ "content, authorUsername) VALUES (?, ?, ?, ?)";
+				+ "content, authorUsername, visibilityLevel, publishTime) VALUES (?, ?, ?, ?, ?, ?)";
 		PreparedStatement pstmt = connection.prepareStatement(insertReply);
 		
 		pstmt.setLong(1, reply.getPostId());
-
 		pstmt.setString(2, reply.getDatePosted().toString());
-
 		pstmt.setString(3, reply.getContent());
-
 		pstmt.setString(4, reply.getAuthorUsername());
+		pstmt.setInt(5, reply.getVisibilityLevel());
+		pstmt.setLong(6, reply.getPublishTime());
+		
 		pstmt.executeUpdate();
 		
 		ResultSet rs = pstmt.getGeneratedKeys();
 		if (rs.next()) {
-		    reply.setReplyId(rs.getLong(1));
+			reply.setReplyId(rs.getLong(1));
 		}
 	}
 	
@@ -1597,20 +1673,31 @@ public class Database {
 	 */
 	public List<Reply> getRepliesList() {
 		List<Reply> repliesList = new ArrayList<Reply>();
-		String query = "SELECT * FROM Replies";
+		
+		// Determine the privilege level of the currently logged-in user
+		int userPrivilege = currentAdminRole ? 2 : (currentNewStaffRole ? 1 : 0);
+		long currentTime = System.currentTimeMillis(); // UNIX time in milliseconds
+
+		// Filter based on visibility level and publish time
+		String query = "SELECT * FROM Replies WHERE visibilityLevel <= ? AND (publishTime <= ? OR authorUsername = ? OR ? >= 1)";
+		
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, userPrivilege);
+			pstmt.setLong(2, currentTime);
+			pstmt.setString(3, currentUsername);
+			pstmt.setInt(4, userPrivilege);
+			
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
 				Reply newReply = new Reply(rs.getLong("replyID"), rs.getLong("postID"), rs.getString("creationDate"), 
 						rs.getString("content"), rs.getString("authorUsername"), rs.getBoolean("isEdited"), rs.getBoolean("isDeleted"),
-						rs.getBoolean("isReadByPostAuthor"));
+						rs.getBoolean("isReadByPostAuthor"), rs.getInt("visibilityLevel"), rs.getLong("publishTime"));
 				repliesList.add(newReply);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
-//		System.out.println(userList);
 		return repliesList;
 	}
 	

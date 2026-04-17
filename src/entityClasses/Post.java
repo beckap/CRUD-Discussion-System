@@ -49,6 +49,8 @@ public class Post {
 	private String authorUsername;
 	private boolean isEdited = false;
 	private boolean isDeleted = false;
+	private int visibilityLevel = 0;
+	private long publishTime = 0;
 	
 	/*****
 	 * <p>
@@ -57,7 +59,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This constructor is used to establish initial post objects.
+	 * DescripublishTimeion: This constructor is used to establish initial post objects.
 	 * </p>
 	 * 
 	 * @param id	   specifies the id  
@@ -91,7 +93,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This constructor is used to establish post objects with update attributes.
+	 * DescripublishTimeion: This constructor is used to establish post objects with update attributes.
 	 * </p>
 	 * 
 	 * @param id	   specifies the id  
@@ -111,10 +113,12 @@ public class Post {
 	 * @param isEdited specifies the boolean value of an edited post
 	 * 
 	 * @param isDeleted specifies the boolean value of a deleted post
+	 * @param publishTime 
+	 * @param visibilityLevel 
 	 * 
 	 */
 	public Post(long id, String date, String type, String title, String category, 
-			String content, String authorUsername, boolean isEdited, boolean isDeleted) {
+			String content, String authorUsername, boolean isEdited, boolean isDeleted, int visibilityLevel, long publishTime) {
 		this.postId = id;
 		this.authorUsername = authorUsername;
 		this.title = title;
@@ -124,6 +128,8 @@ public class Post {
 		this.datePosted = LocalDateTime.parse(date);
 		this.isDeleted = isDeleted;
 		this.isEdited = isEdited;
+		this.visibilityLevel = visibilityLevel;
+		this.publishTime = publishTime;
 	}
 	
 	/*****
@@ -132,7 +138,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This edits the content of the post.
+	 * DescripublishTimeion: This edits the content of the post.
 	 * </p>
 	 * 
 	 * @param title	  specifies the new title
@@ -150,7 +156,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This soft deletes the post.
+	 * DescripublishTimeion: This soft deletes the post.
 	 * </p>
 	 */
 	public void deletePost() {
@@ -163,7 +169,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the id.
+	 * DescripublishTimeion: This getter returns the id.
 	 * </p>
 	 * 
 	 * @return a value for the ID
@@ -178,7 +184,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the title of post.
+	 * DescripublishTimeion: This getter returns the title of post.
 	 * </p>
 	 * 
 	 * @return title
@@ -193,7 +199,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the author's username.
+	 * DescripublishTimeion: This getter returns the author's username.
 	 * </p>
 	 * 
 	 * @return username of author
@@ -208,7 +214,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the content.
+	 * DescripublishTimeion: This getter returns the content.
 	 * </p>
 	 * 
 	 * @return content
@@ -223,7 +229,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the type of post.
+	 * DescripublishTimeion: This getter returns the type of post.
 	 * </p>
 	 * 
 	 * @return type of post (POST or QUESTION)
@@ -238,7 +244,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the category.
+	 * DescripublishTimeion: This getter returns the category.
 	 * </p>
 	 * 
 	 * @return category of post (GENERAL, HOMEWORK, LECTURES, or EXAMS)
@@ -253,7 +259,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns the date the post was posted.
+	 * DescripublishTimeion: This getter returns the date the post was posted.
 	 * </p>
 	 * 
 	 * @return date posted
@@ -268,7 +274,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns a boolean.
+	 * DescripublishTimeion: This getter returns a boolean.
 	 * </p>
 	 * 
 	 * @return TRUE if the post is edited or FALSE if not
@@ -283,7 +289,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This getter returns a boolean.
+	 * DescripublishTimeion: This getter returns a boolean.
 	 * </p>
 	 * 
 	 * @return TRUE if the post is deleted or FALSE if not
@@ -298,7 +304,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This setter sets the content of Post.
+	 * DescripublishTimeion: This setter sets the content of Post.
 	 * </p>
 	 * 
 	 * @param content	new content
@@ -313,7 +319,7 @@ public class Post {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: This setter sets the post id.
+	 * DescripublishTimeion: This setter sets the post id.
 	 * </p>
 	 * 
 	 * @param long1		id
@@ -322,5 +328,24 @@ public class Post {
 		this.postId = long1;
 		
 	}
+
+	// TODO JavaDoc
+	public int getVisibilityLevel() {
+		return this.visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public long getPublishTime() {
+		return this.publishTime;
+	}
 	
+	// TODO JavaDoc
+	public void setVisibilityLevel(int visibilityLevel) {
+		this.visibilityLevel = visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public void setPublishTime(long publishTime) {
+		this.publishTime = publishTime;
+	}
 }

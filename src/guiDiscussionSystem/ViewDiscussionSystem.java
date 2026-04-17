@@ -21,6 +21,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 
 /*******
  * <p>
@@ -193,50 +195,72 @@ public class ViewDiscussionSystem {
 		
 		// Set up GUI Area 2
 		postsList.setBackground(Background.EMPTY);
-		// Render each post with a compact preview: title, category, and author.
-		ViewDiscussionSystem.postsList.setCellFactory(_ -> new ListCell<Post>() {
-			@Override
-            protected void updateItem(Post item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    setBackground(Background.EMPTY);
-                } else {
-                	PostCategory category = item.getCategory();
-            		
-            		String stringCategory = "";
-            		if (category == PostCategory.LECTURES) {
-            			stringCategory = "Lectures	-	";
-            		} else if (category == PostCategory.EXAMS) {
-            			stringCategory = "Exams		-	";
-            		} else if (category == PostCategory.HOMEWORK) {
-            			stringCategory = "Homework	-	";
-            		} else {
-            			stringCategory = "General	-	";
-            		}
-            		setText(item.getTitle() + "\n" + stringCategory +
-            				item.getAuthorUsername() + "\n\n");
-            		
-            		int totalReplies = ControllerDiscussionSystem.replyStorage.getNumRepliesByPostId(item.getPostId());
-            		int unreadReplies = ControllerDiscussionSystem.replyStorage.getNumUnreadRepliesByPostId(item.getPostId());
-            		
-            		String replyLabel = totalReplies + " replies";
-            		
-            		// Only show unread count to author
-            		if (unreadReplies > 0 && item.getAuthorUsername().equals(theUser.getUserName())) {
-            			replyLabel += " (" + unreadReplies + " unread)";
-            		}
+		// Render each post with a compact preview: title, category, author, and contextual controls.
+				ViewDiscussionSystem.postsList.setCellFactory(_ -> new ListCell<Post>() {
+					@Override
+					protected void updateItem(Post item, boolean empty) {
+						super.updateItem(item, empty);
+						if (empty || item == null) {
+							setText(null);
+							setGraphic(null);
+							setBackground(Background.EMPTY);
+						} else {
+							PostCategory category = item.getCategory();
+							String stringCategory = switch (category) {
+								case LECTURES -> "Lectures\t-\t";
+								case EXAMS -> "Exams\t\t-\t";
+								case HOMEWORK -> "Homework\t-\t";
+								default -> "General\t-\t";
+							};
 
-            		// Append replyLabel
-            		setText(item.getTitle() + "\n" + stringCategory +
-            				item.getAuthorUsername() + "  |  " + replyLabel + "\n\n");
-            		setBackground(Background.EMPTY);
-                    setBackground(Background.EMPTY);
-                }
-            }
-			
-		});
+							int totalReplies = ControllerDiscussionSystem.replyStorage.getNumRepliesByPostId(item.getPostId());
+							int unreadReplies = ControllerDiscussionSystem.replyStorage.getNumUnreadRepliesByPostId(item.getPostId());
+							
+							String replyLabel = totalReplies + " replies";
+							if (unreadReplies > 0 && item.getAuthorUsername().equals(theUser.getUserName())) {
+								replyLabel += " (" + unreadReplies + " unread)";
+							}
+
+							String postTextContent = item.getTitle() + "\n" + stringCategory +
+									item.getAuthorUsername() + "  |  " + replyLabel + "\n";
+
+							// Create the main container for the cell
+							HBox cellLayout = new HBox(10);
+							cellLayout.setAlignment(Pos.CENTER_LEFT);
+
+							Label textLabel = new Label(postTextContent);
+
+							// Spacer to push controls to the far right
+							Region spacer = new Region();
+							HBox.setHgrow(spacer, Priority.ALWAYS);
+
+							cellLayout.getChildren().addAll(textLabel, spacer);
+
+							// Check if the current user has the privilege to hide this specific post
+							if (ControllerDiscussionSystem.canHidePost(theUser, item.getAuthorUsername())) {
+								HBox hideContainer = new HBox(5);
+								hideContainer.setAlignment(Pos.CENTER);
+
+								CheckBox hideCheckBox = new CheckBox("Hide");
+								
+								// If visibilityLevel > 0, the post is currently hidden
+								hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
+								
+								// Fire an event to the Controller when checked/unchecked
+								hideCheckBox.setOnAction(_ -> {
+									ControllerDiscussionSystem.togglePostVisibility(item, hideCheckBox.isSelected());
+								});
+								
+								hideContainer.getChildren().addAll(hideCheckBox);
+								cellLayout.getChildren().add(hideContainer);
+							}
+
+							setGraphic(cellLayout);
+							setText(null); // Clear default text
+							setBackground(Background.EMPTY);
+						}
+					}
+				});
 		scrollPane_Posts.setLayoutX(10);
 		scrollPane_Posts.setLayoutY(140);
 		scrollPane_Posts.setPrefHeight(370);

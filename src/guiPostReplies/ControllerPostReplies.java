@@ -5,10 +5,12 @@ import entityClasses.Post;
 import entityClasses.PostStorage;
 import entityClasses.Reply;
 import entityClasses.ReplyStorage;
+import entityClasses.User;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
@@ -114,6 +116,26 @@ public class ControllerPostReplies {
 	}
 	
 	/**********
+	 * <p> Method: canHideReply(User currentUser, String authorUsername) </p>
+	 * * <p> Description: Checks your privilege level compared to the author.
+	 * Staff+ can hide posts of lesser-privileged users. </p>
+	 */
+	protected static boolean canHideReply(User currentUser, String authorUsername) {
+		// Check your privilege
+		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
+		
+		// If the user is a Student (0), they can never hide others' posts
+		if (yourPrivilege == 0) return false;
+		
+		// Can users hide their own posts? Yes, they can!
+		if (currentUser.getUserName().equals(authorUsername)) return true;
+
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		
+		return yourPrivilege > authorPrivilege;
+	}
+	
+	/**********
 	 * Paints the window with proper UI elements for the user to view.
 	 * 
 	 * <p><b>Purpose:</b></p>
@@ -125,63 +147,38 @@ public class ControllerPostReplies {
 	 * 
 	 */
 	protected static void repaintTheWindow() {
+		// Prevent duplicates
+		ViewPostReplies.postLayout.getChildren().clear();
+		
 		// Update the displayed title with post title and ID
 		ViewPostReplies.label_PageTitle.setText(selected.getTitle() + "	#" + 
 				selected.getPostId());
 		MenuItem editPost = new MenuItem("Edit");
 		MenuItem deletePost = new MenuItem("Delete");
 		MenuButton threeDotsPost = new MenuButton(null, null, editPost, deletePost);
-		
-		// Clear previous UI elements to avoid duplication when refreshing
-		ViewPostReplies.postLayout.getChildren().clear();
-		
-		// Update the post content displayed
-		ViewPostReplies.postLabel.setText(postStorage.displayPost(selected));
-		
-		editPost.setOnAction(_ -> {
-			// Prevent editing if the post has been deleted
-			if(selected.isDeleted()) {
-				ViewPostReplies.editError.setTitle("Edit Error");
-				ViewPostReplies.editError.setHeaderText(null);
-				ViewPostReplies.editError.setContentText("This post has been deleted. You cannot edit it.");
-				ViewPostReplies.editError.showAndWait();
-                return;
-			}
-			
-			// Ensure only the author can edit the post
-			if(!selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
-				ViewPostReplies.editError.setTitle("Edit Error");
-				ViewPostReplies.editError.setHeaderText(null);
-				ViewPostReplies.editError.setContentText("You cannot edit someone else's post");
-				ViewPostReplies.editError.showAndWait();
-                return;
-			}
-			performEditPost(selected);
-			repaintTheWindow();
-		});
-		
-		deletePost.setOnAction(_ -> {
-			String errorMessage = postStorage.deletePost(selected, 
-					ViewPostReplies.theUser);
-			
-			if (!errorMessage.isEmpty()) {
-				ViewPostReplies.deleteError.setTitle("Deletion Error");
-				ViewPostReplies.deleteError.setHeaderText(null);
-				ViewPostReplies.deleteError.setContentText(errorMessage);
-				ViewPostReplies.deleteError.showAndWait();
-            }
-			
-			repaintTheWindow();
-		});
-		
 		threeDotsPost.setText("...");
+		CheckBox hideCheckBox = new CheckBox("Hide");
 		
+		// Add post label
+		ViewPostReplies.postLayout.getChildren().add(ViewPostReplies.postLabel);
+
 		// Only show edit/delete options if the current user owns the post or if is a staff
 		if(selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName()) || 
 				ViewPostReplies.theUser.getNewStaffRole()) {
-			ViewPostReplies.postLayout.getChildren().addAll(ViewPostReplies.postLabel, threeDotsPost);
-		} else {
-			ViewPostReplies.postLayout.getChildren().addAll(ViewPostReplies.postLabel);
+			ViewPostReplies.postLayout.getChildren().add(threeDotsPost);
+		}
+		
+		// Check if the current user has the privilege to hide this specific post
+		if (canHideReply(ViewPostReplies.theUser, selected.getAuthorUsername())) {
+			hideCheckBox.setSelected(selected.getVisibilityLevel() > 0);
+			hideCheckBox.setOnAction(_ -> {
+				int yourPrivilege = ViewPostReplies.theUser.getAdminRole() ? 2 : (ViewPostReplies.theUser.getNewStaffRole() ? 1 : 0);
+				int newVisibilityLevel = hideCheckBox.isSelected() ? yourPrivilege : 0;
+				postStorage.updatePostVisibility(selected.getPostId(), newVisibilityLevel);
+				selected.setVisibilityLevel(newVisibilityLevel);
+			});
+			
+			ViewPostReplies.postLayout.getChildren().add(hideCheckBox);
 		}
 		
 		replyStorage.populateAllReplies();
@@ -461,5 +458,23 @@ public class ControllerPostReplies {
 	 */
 	protected static void performQuit() {
 		System.exit(0);
+	}
+	
+	/**********
+	 * <p> Method: toggleReplyVisibility(Reply reply, boolean hide) </p>
+	 * <p> Description: Toggles post visibility between 0 and the user's privilege level </p>
+	 */
+	protected static void toggleReplyVisibility(Reply reply, boolean shouldHide) {
+		// Check your privilege
+		int yourPrivilege = ViewPostReplies.theUser.getAdminRole() ? 2 : (ViewPostReplies.theUser.getNewStaffRole() ? 1 : 0);
+		
+		// If hiding, set to the user's level. If unhiding, set to 0.
+		int newVisibilityLevel = shouldHide ? yourPrivilege : 0;
+		
+		// Update the database
+		replyStorage.updateReplyVisibility(reply.getReplyId(), newVisibilityLevel);
+		
+		// Update the local object so the UI stays in sync without a full DB refresh
+		reply.setVisibilityLevel(newVisibilityLevel);
 	}
 }

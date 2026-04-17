@@ -8,6 +8,7 @@ import entityClasses.PostCategory;
 import entityClasses.PostStorage;
 import entityClasses.PostType;
 import entityClasses.ReplyStorage;
+import entityClasses.User;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -214,6 +215,26 @@ public class ControllerDiscussionSystem {
 	}
 	
 	/**********
+	 * <p> Method: canHidePost(User currentUser, String authorUsername) </p>
+	 * * <p> Description: Checks your privilege level compared to the author.
+	 * Staff+ can hide posts of lesser-privileged users. </p>
+	 */
+	protected static boolean canHidePost(User currentUser, String authorUsername) {
+		// Check your privilege
+		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
+		
+		// If the user is a Student (0), they can never hide others' posts
+		if (yourPrivilege == 0) return false;
+		
+		// Can users hide their own posts? Yes, they can!
+		if (currentUser.getUserName().equals(authorUsername)) return true;
+
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		
+		return yourPrivilege > authorPrivilege;
+	}
+	
+	/**********
 	 * <p> Method: performReturn() </p>
 	 * 
 	 * <p> Description: This method returns the user home page. </p>
@@ -262,5 +283,23 @@ public class ControllerDiscussionSystem {
 	 */
 	protected static void performQuit() {
 		System.exit(0);
+	}
+
+	/**********
+	 * <p> Method: togglePostVisibility(Post post, boolean hide) </p>
+	 * <p> Description: Toggles post visibility between 0 and the user's privilege level </p>
+	 */
+	protected static void togglePostVisibility(Post post, boolean shouldHide) {
+		// Check your privilege
+		int yourPrivilege = ViewDiscussionSystem.theUser.getAdminRole() ? 2 : (ViewDiscussionSystem.theUser.getNewStaffRole() ? 1 : 0);
+		
+		// If hiding, set to the user's level. If unhiding, set to 0.
+		int newVisibilityLevel = shouldHide ? yourPrivilege : 0;
+		
+		// Update the database
+		postStorage.updatePostVisibility(post.getPostId(), newVisibilityLevel);
+		
+		// Update the local object so the UI stays in sync without a full DB refresh
+		post.setVisibilityLevel(newVisibilityLevel);
 	}
 }

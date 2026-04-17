@@ -481,5 +481,16 @@ public class ReplyStorage {
 		return null;
 	}
 	
-
+	/*******
+	 * <p> Method: updateReplyVisibility(long postId, int visibilityLevel) </p>
+	 * <p> Description: Updates the visibility level of a specific reply. </p>
+	 */
+	public void updateReplyVisibility(long replyId, int visibilityLevel) {
+		try {
+			theDatabase.updateReplyVisibility(replyId, visibilityLevel);
+		} catch (Exception e) {
+			System.out.println("Error updating post visibility: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
 }

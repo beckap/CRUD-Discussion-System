@@ -92,6 +92,7 @@ public class FoundationsMain extends Application {
 			database.connectToDatabase();
 		} catch (SQLException e) {
 			// If the connection request fails, it usually means some other app is using it
+			e.printStackTrace();
 			databaseInUse.setTitle("*** ERROR ***");
 			databaseInUse.setHeaderText("Database Is Already Being Used");
 			databaseInUse.setContentText("Please stop the other instance and try again!");
