@@ -193,6 +193,21 @@ public class ControllerStaffHome {
 
 	/**********
 	 * <p>
+	 * 
+	 * Title: performDiscussions() Method.
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Protected method that displays the discussion page after
+	 * 	button is clicked.
+	 * </p>
+	 */
+	protected static void performGradingDashboard() {
+		guiGradingDashboard.ViewGradingDashboard.displayGradingDashboard(ViewStaffHome.theStage, ViewStaffHome.theUser);
+	}
+	
+	/**********
+	 * <p>
 	 * Method: performLogout()
 	 * </p>
 	 * 

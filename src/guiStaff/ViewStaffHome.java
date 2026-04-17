@@ -33,10 +33,11 @@ import entityClasses.User;
  * Copyright: Lynn Robert Carter © 2025
  * </p>
  * 
- * @author Lynn Robert Carter
+ * @author Lynn Robert Carter, Becka Perez Guerrero
  * 
  * @version 1.00 2025-08-20 Initial version
  * @version 2.00 2026-02-01 Updated GUI changes based on Role by Becka Perez Guerrero
+ * @version 3.00 2026-04-17 Updated GUI display and more changes based on new functionality
  * 
  */
 
@@ -75,16 +76,31 @@ public class ViewStaffHome {
 	protected static ComboBox <String> combobox_SelectRole = new ComboBox <String>();
 	protected static String [] roles = {"Staff", "Student"};
 	protected static Button button_SendInvitation = new Button("Send Invitation");
-	protected static Button button_Discussion = new Button("Discussion");
 	protected static Alert alertEmailError = new Alert(AlertType.INFORMATION);
 	protected static Alert alertEmailSent = new Alert(AlertType.INFORMATION);
 		
 	// This is a separator and it is used to partition the GUI for various tasks
 	private static Line line_Separator3 = new Line(20, 200, width-20, 200);
 	
+	/***
+	 * This button is used to access the one time password page
+	 */
 	protected static Button button_SetOnetimePassword = new Button("Set a One-Time Password");
+	
+	/***
+	 * This button is used to access the list all staff/students page
+	 */
 	protected static Button button_ListUsers = new Button("List All Users");
-
+	
+	/***
+	 * This button is used to access the discussion system page
+	 */
+	protected static Button button_Discussion = new Button("Discussion");
+	
+	/***
+	 * This button is used to access the grading dashboard page
+	 */
+	protected static Button button_Grading = new Button("Grading Dashboard");
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width - 20, 525);
 
@@ -232,19 +248,24 @@ public class ViewStaffHome {
 		setupButtonUI(button_SendInvitation, 150, Pos.CENTER, 630, 150);
 		button_SendInvitation.setOnAction((_) -> {ControllerStaffHome.performInvitation(); });
 		
-		setupButtonUI(button_SetOnetimePassword, 250, Pos.CENTER, 300, 270);
+		setupButtonUI(button_SetOnetimePassword, 250, Pos.CENTER, 300, 240);
 		button_SetOnetimePassword.setOnAction((_) -> {
 			ControllerStaffHome.setOnetimePassword();
 		});
 
-		setupButtonUI(button_ListUsers, 250, Pos.CENTER, 300, 330);
+		setupButtonUI(button_ListUsers, 250, Pos.CENTER, 300, 300);
 		button_ListUsers.setOnAction((_) -> {
 			ControllerStaffHome.listUsers();
 		});
 		
-		setupButtonUI(button_Discussion, 250, Pos.CENTER, 300, 390);
+		setupButtonUI(button_Discussion, 250, Pos.CENTER, 300, 360);
 		button_Discussion.setOnAction((_) -> {
 			ControllerStaffHome.performDiscussions();
+		});
+		
+		setupButtonUI(button_Grading, 250, Pos.CENTER, 300, 420);
+		button_Grading.setOnAction((_) -> {
+			ControllerStaffHome.performGradingDashboard();
 		});
 
 		// GUI Area 3
@@ -275,10 +296,9 @@ public class ViewStaffHome {
 
 		// Place all of the widget items into the Root Pane's list of children
 		theRootPane.getChildren().addAll(label_PageTitle, label_UserDetails, button_UpdateThisUser, line_Separator1,
-				label_Invitations, 
-	    		label_InvitationEmailAddress, text_InvitationEmailAddress,
-	    		combobox_SelectRole, button_SendInvitation,
-				line_Separator3, line_Separator4, button_SetOnetimePassword, button_Discussion, button_ListUsers, 
+				label_Invitations, label_InvitationEmailAddress, text_InvitationEmailAddress,
+	    		combobox_SelectRole, button_SendInvitation, line_Separator3, line_Separator4, 
+	    		button_SetOnetimePassword, button_Discussion, button_ListUsers, button_Grading,
 				button_Logout, button_Quit);
 	}
 
