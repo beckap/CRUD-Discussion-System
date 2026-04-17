@@ -1,4 +1,4 @@
-package applicationMain;
+package Tests;
 
 /*******
  * <p><b>Class:</b> TestingAutomation class (legacy).
