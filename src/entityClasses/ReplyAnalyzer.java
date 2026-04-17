@@ -162,6 +162,7 @@ public class ReplyAnalyzer {
 	 * @return double value describing progress of student participation
 	 */
 	public double getParticipationProgress() {
+		participationProgress = countUniqueReplies();
 		return participationProgress / 3.0;
 	}
 }

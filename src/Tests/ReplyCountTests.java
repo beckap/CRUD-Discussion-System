@@ -290,5 +290,32 @@ class ReplyCountTests {
 			assertEquals("Cannot analyze an empty username.", e.getMessage());
 		}
 	}
+	
+	/***
+	 * Tests that a student with exactly 3 unique replies satisfies the requirement.
+	 */
+	@Test
+	void correctPercentageParticipation() {
+		Database mockDB = mock(Database.class);
+		ReplyStorage storage = new ReplyStorage(mockDB);
+		List<Reply> fakeList = new ArrayList<>();
+		student1.setUserName("rperezg4");
+		for (int i = 1; i <= 2; i++) {
+			for (int j = 1; j <= 3; j++) {
+				storage.createReply("Content of reply #" + j, student1, i);
+				fakeList.add(new Reply(j, i, "Content of reply #" + j, student1.getUserName()));
+			}
+		}
+		
+		when(mockDB.getRepliesList()).thenReturn(fakeList);
+		try {
+			ReplyAnalyzer analyzer = new ReplyAnalyzer(storage, "rperezg4");
+			double progress = analyzer.getParticipationProgress();
+			assertEquals(2, analyzer.countUniqueReplies());
+			assertEquals(2.0/3.0, progress);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
