@@ -159,28 +159,32 @@ public class ModelPostReplies {
                 HBox.setHgrow(spacer, Priority.ALWAYS);
                 container.getChildren().add(spacer);
             	
-            	// Only shows menu for reply owners or staff.
-            	if (item.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName()) ||
-            			ViewPostReplies.theUser.getNewStaffRole()) {
-            		container.getChildren().add(threeDots);
-            	}
-            	
-            	// Check if the current user has the privilege to hide this specific reply
-            	if (ControllerPostReplies.canHideReply(ViewPostReplies.theUser, item.getAuthorUsername())) {
-            		HBox hideContainer = new HBox(5);
-            		hideContainer.setAlignment(Pos.CENTER);
-            		
-            		CheckBox hideCheckBox = new CheckBox("Hide");
-            		hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
-            		
-            		hideCheckBox.setOnAction(_ -> {
-            			ControllerPostReplies.toggleReplyVisibility(item, hideCheckBox.isSelected());
-            		});
-            		
-            		hideContainer.getChildren().add(hideCheckBox);
-            		
-            		// Append the hide container to the right of the dropdown menu
-            		container.getChildren().add(hideContainer);
+            	if (item.isDeleted()) {
+            		Label deletedLabel = new Label("[DELETED]");
+            		container.getChildren().add(deletedLabel);
+            	} else {
+	            	// Only shows menu for reply owners
+	            	if (item.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+	            		container.getChildren().add(threeDots);
+	            	}
+	            	
+	            	// Check if the current user has the privilege to hide this specific reply
+	            	if (ControllerPostReplies.canHideReply(ViewPostReplies.theUser, item.getAuthorUsername())) {
+	            		HBox hideContainer = new HBox(5);
+	            		hideContainer.setAlignment(Pos.CENTER);
+	            		
+	            		CheckBox hideCheckBox = new CheckBox("Hide");
+	            		hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
+	            		
+	            		hideCheckBox.setOnAction(_ -> {
+	            			ControllerPostReplies.toggleReplyVisibility(item, hideCheckBox.isSelected());
+	            		});
+	            		
+	            		hideContainer.getChildren().add(hideCheckBox);
+	            		
+	            		// Append the hide container to the right of the dropdown menu
+	            		container.getChildren().add(hideContainer);
+	            	}
             	}
             	
                 setGraphic(container);

@@ -236,8 +236,11 @@ public class ViewDiscussionSystem {
 
 							cellLayout.getChildren().addAll(textLabel, spacer);
 
-							// Check if the current user has the privilege to hide this specific post
-							if (ControllerDiscussionSystem.canHidePost(theUser, item.getAuthorUsername())) {
+							if (item.isDeleted()) {
+								Label deletedLabel = new Label("[DELETED]");
+								cellLayout.getChildren().add(deletedLabel);
+							} else if (ControllerDiscussionSystem.canHidePost(theUser, item.getAuthorUsername())) {
+								// Check if the current user has the privilege to hide this specific post
 								HBox hideContainer = new HBox(5);
 								hideContainer.setAlignment(Pos.CENTER);
 
@@ -246,7 +249,7 @@ public class ViewDiscussionSystem {
 								// If visibilityLevel > 0, the post is currently hidden
 								hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
 								
-								// Fire an event to the Controller when checked/unchecked
+								// Fire an event when checked/unchecked
 								hideCheckBox.setOnAction(_ -> {
 									ControllerDiscussionSystem.togglePostVisibility(item, hideCheckBox.isSelected());
 								});
@@ -261,6 +264,7 @@ public class ViewDiscussionSystem {
 						}
 					}
 				});
+				
 		scrollPane_Posts.setLayoutX(10);
 		scrollPane_Posts.setLayoutY(140);
 		scrollPane_Posts.setPrefHeight(370);
@@ -270,7 +274,6 @@ public class ViewDiscussionSystem {
 		scrollPane_Posts.setVbarPolicy(ScrollBarPolicy.NEVER);
 		scrollPane_Posts.setStyle("-fx-background-color: transparent; "
 				+ "-fx-background-insets: 0; -fx-padding: 0;");
-		
 		
 		setupButtonUI(createPost, 150, Pos.CENTER, 330, 550);
 		createPost.setOnAction((_) -> {

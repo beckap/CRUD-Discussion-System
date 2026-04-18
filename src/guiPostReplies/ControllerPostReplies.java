@@ -116,23 +116,29 @@ public class ControllerPostReplies {
 	}
 	
 	/**********
-	 * <p> Method: canHideReply(User currentUser, String authorUsername) </p>
-	 * * <p> Description: Checks your privilege level compared to the author.
+	 * <p> Method: hasHigherPrivilege(User currentUser, String authorUsername) </p>
+	 * <p> Description: Checks if the current user has strictly higher privilege than the author. </p>
+	 */
+	protected static boolean hasHigherPrivilege(User currentUser, String authorUsername) {
+		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		return yourPrivilege > authorPrivilege;
+	}
+
+	/**********
+	 * <p> Method: canHidePost(User currentUser, String authorUsername) </p>
+	 * <p> Description: Checks your privilege level compared to the author.
 	 * Staff+ can hide posts of lesser-privileged users. </p>
 	 */
 	protected static boolean canHideReply(User currentUser, String authorUsername) {
-		// Check your privilege
-		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
 		
-		// If the user is a Student (0), they can never hide others' posts
-		if (yourPrivilege == 0) return false;
+		// Students can't hide
+		if (currentUser.getNewStudentRole()) return false;
 		
 		// Can users hide their own posts? Yes, they can!
 		if (currentUser.getUserName().equals(authorUsername)) return true;
-
-		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
 		
-		return yourPrivilege > authorPrivilege;
+		return hasHigherPrivilege(currentUser, authorUsername);
 	}
 	
 	/**********
@@ -153,32 +159,52 @@ public class ControllerPostReplies {
 		// Update the displayed title with post title and ID
 		ViewPostReplies.label_PageTitle.setText(selected.getTitle() + "	#" + 
 				selected.getPostId());
-		MenuItem editPost = new MenuItem("Edit");
-		MenuItem deletePost = new MenuItem("Delete");
-		MenuButton threeDotsPost = new MenuButton(null, null, editPost, deletePost);
-		threeDotsPost.setText("...");
-		CheckBox hideCheckBox = new CheckBox("Hide");
 		
 		// Add post label
 		ViewPostReplies.postLayout.getChildren().add(ViewPostReplies.postLabel);
 
-		// Only show edit/delete options if the current user owns the post or if is a staff
-		if(selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName()) || 
-				ViewPostReplies.theUser.getNewStaffRole()) {
-			ViewPostReplies.postLayout.getChildren().add(threeDotsPost);
-		}
-		
-		// Check if the current user has the privilege to hide this specific post
-		if (canHideReply(ViewPostReplies.theUser, selected.getAuthorUsername())) {
-			hideCheckBox.setSelected(selected.getVisibilityLevel() > 0);
-			hideCheckBox.setOnAction(_ -> {
-				int yourPrivilege = ViewPostReplies.theUser.getAdminRole() ? 2 : (ViewPostReplies.theUser.getNewStaffRole() ? 1 : 0);
-				int newVisibilityLevel = hideCheckBox.isSelected() ? yourPrivilege : 0;
-				postStorage.updatePostVisibility(selected.getPostId(), newVisibilityLevel);
-				selected.setVisibilityLevel(newVisibilityLevel);
-			});
+		// Either show [DELETED] or build the normal controls
+		if (selected.isDeleted()) {
+			Label deletedLabel = new Label("[DELETED]");
+			ViewPostReplies.postLayout.getChildren().add(deletedLabel);
+		} else {
+			MenuItem editPost = new MenuItem("Edit");
+			MenuItem deletePost = new MenuItem("Delete");
 			
-			ViewPostReplies.postLayout.getChildren().add(hideCheckBox);
+			// Actually hook up actions so clicking delete does something!!!!
+			editPost.setOnAction(_ -> performEditPost(selected));
+			deletePost.setOnAction(_ -> {
+				String errorMessage = postStorage.deletePost(selected, ViewPostReplies.theUser);
+				if (errorMessage != null && !errorMessage.isEmpty()) {
+					ViewPostReplies.deleteError.setTitle("Deletion Error");
+					ViewPostReplies.deleteError.setHeaderText(null);
+					ViewPostReplies.deleteError.setContentText(errorMessage);
+					ViewPostReplies.deleteError.showAndWait();
+				} else {
+					performReturn(); // Return to the discussion board once deleted
+				}
+			});
+
+			MenuButton threeDotsPost = new MenuButton("...", null, editPost, deletePost);
+
+			// Only show edit/delete to the actual author
+			if(selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+				ViewPostReplies.postLayout.getChildren().add(threeDotsPost);
+			}
+			
+			// Check if the current user has the privilege to hide this specific post
+			if (canHideReply(ViewPostReplies.theUser, selected.getAuthorUsername())) {
+				CheckBox hideCheckBox = new CheckBox("Hide");
+				hideCheckBox.setSelected(selected.getVisibilityLevel() > 0);
+				hideCheckBox.setOnAction(_ -> {
+					int yourPrivilege = ViewPostReplies.theUser.getAdminRole() ? 2 : (ViewPostReplies.theUser.getNewStaffRole() ? 1 : 0);
+					int newVisibilityLevel = hideCheckBox.isSelected() ? yourPrivilege : 0;
+					postStorage.updatePostVisibility(selected.getPostId(), newVisibilityLevel);
+					selected.setVisibilityLevel(newVisibilityLevel);
+				});
+				
+				ViewPostReplies.postLayout.getChildren().add(hideCheckBox);
+			}
 		}
 		
 		replyStorage.populateAllReplies();

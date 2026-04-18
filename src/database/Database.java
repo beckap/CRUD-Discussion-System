@@ -1597,15 +1597,27 @@ public class Database {
 			
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
+				boolean isDeleted = rs.getBoolean("isDeleted");
+				String author = rs.getString("authorUsername");
+				
+				// If deleted, only return the post if the current user has a STRICTLY HIGHER privilege level than the author.
+				if (isDeleted) {
+					int authorPrivilege = getUserPrivilegeLevel(author);
+					if (userPrivilege <= authorPrivilege) {
+						continue; // Skip adding this post for the author and lower-privileged users
+					}
+				}
+				
 				Post newPost = new Post(rs.getLong("postID"), rs.getString("creationDate"), rs.getString("postType"),
 						rs.getString("title"), rs.getString("postCategory"), rs.getString("content"), 
-						rs.getString("authorUsername"), rs.getBoolean("isEdited"), rs.getBoolean("isDeleted"),
+						author, rs.getBoolean("isEdited"), isDeleted,
 						rs.getInt("visibilityLevel"), rs.getLong("publishTime"));
 				postsList.add(newPost);
 			}
 		} catch (SQLException e) {
 			return null;
 		}
+		
 		return postsList;
 	}
 	
@@ -1648,12 +1660,10 @@ public class Database {
 	 * 
 	 */
 	public void deletePost(long postId, String deleteMessage) throws SQLException {
-		String query = "UPDATE Posts SET content = ?, isDeleted = TRUE WHERE postID = ?";
+		String query = "UPDATE Posts SET isDeleted = TRUE WHERE postID = ?";
 		PreparedStatement pstmt = connection.prepareStatement(query);
-			pstmt.setString(1, deleteMessage);
-			pstmt.setLong(2, postId);
+			pstmt.setLong(1, postId);
 			pstmt.executeUpdate();
-		
 	}
 	
 	/*******
@@ -1720,8 +1730,19 @@ public class Database {
 			
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next()) {
+				boolean isDeleted = rs.getBoolean("isDeleted");
+				String author = rs.getString("authorUsername");
+				
+				// If deleted, only return the reply if the current user has a STRICTLY HIGHER privilege level than the author.
+				if (isDeleted) {
+					int authorPrivilege = getUserPrivilegeLevel(author);
+					if (userPrivilege <= authorPrivilege) {
+						continue; // Skip adding this reply for the author and lower-privileged users
+					}
+				}
+
 				Reply newReply = new Reply(rs.getLong("replyID"), rs.getLong("postID"), rs.getString("creationDate"), 
-						rs.getString("content"), rs.getString("authorUsername"), rs.getBoolean("isEdited"), rs.getBoolean("isDeleted"),
+						rs.getString("content"), author, rs.getBoolean("isEdited"), isDeleted,
 						rs.getBoolean("isReadByPostAuthor"), rs.getInt("visibilityLevel"), rs.getLong("publishTime"));
 				repliesList.add(newReply);
 			}
@@ -1790,10 +1811,9 @@ public class Database {
 	 * 
 	 */
 	public void deleteReply(long replyId, String deleteMessage) throws SQLException {
-		String query = "UPDATE Replies SET content = ?, isDeleted = TRUE WHERE replyID = ?";
+		String query = "UPDATE Replies SET isDeleted = TRUE WHERE replyID = ?";
 		PreparedStatement pstmt = connection.prepareStatement(query);
-			pstmt.setString(1, deleteMessage);
-			pstmt.setLong(2, replyId);
+			pstmt.setLong(1, replyId);
 			pstmt.executeUpdate();
 	}
 	

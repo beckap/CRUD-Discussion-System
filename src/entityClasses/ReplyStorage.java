@@ -117,38 +117,45 @@ public class ReplyStorage {
 	}
 	
 	/*****
+	 * <p> Method: hasHigherPrivilege(String authorUsername) </p>
+	 * <p> Description: Checks if the current user has strictly higher privilege than the author. </p>
+	 */
+	private boolean hasHigherPrivilege(String authorUsername) {
+		int currentPrivilege = theDatabase.getCurrentAdminRole() ? 2 : (theDatabase.getCurrentNewStaffRole() ? 1 : 0);
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		return currentPrivilege > authorPrivilege;
+	}
+
+	/*****
 	 * <p>
 	 * Method: ArrayList getAllReplies()
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Retrieves all replies from the database.
 	 * </p>
-	 * 
-	 */
+	 * */
 	public void populateAllReplies() {
 		replies = theDatabase.getRepliesList();
+		
+		// Filter out deleted replies for users without higher privilege
+		replies.removeIf(reply -> reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername()));
 	}
-	
 	
 	/*****
 	 * <p>
 	 * Method: ArrayList getRepliesByDate(LocalDateTime date)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters replies by date.
 	 * </p>
-	 * 
-	 * @param date	specifies date to search
-	 * 
-	 * @return filtered list with replies based on date.
+	 * * @param date	specifies date to search
+	 * * @return filtered list with replies based on date.
 	 */
 	public List<Reply> getRepliesByDate(LocalDateTime date) {
 		filteredReplies.clear();
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -164,20 +171,17 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: ArrayList getRepliesByAuthor(String author)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters replies by author.
 	 * </p>
-	 * 
-	 * @param author	specifies author to search replies
-	 * 
-	 * @return filtered list with replies based on author.
+	 * * @param author	specifies author to search replies
+	 * * @return filtered list with replies based on author.
 	 */
 	public List<Reply> getRepliesByAuthor(String author) {
 		filteredReplies.clear();
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -193,20 +197,17 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: ArrayList getRepliesByPostId(int postId)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters replies by post ID.
 	 * </p>
-	 * 
-	 * @param postId	specifies post id the replies are linked to
-	 * 
-	 * @return filtered list with replies based on post.
+	 * * @param postId	specifies post id the replies are linked to
+	 * * @return filtered list with replies based on post.
 	 */
 	public List<Reply> getRepliesByPostId(long postId) {
 		postReplies.clear();
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -222,21 +223,18 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: ArrayList getNumRepliesByPostId(int postId)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Returns the number of non-deleted replies of the
 	 * post with the given ID.
 	 * </p>
-	 * 
-	 * @param postId Specifies post ID the replies are linked to.
-	 * 
-	 * @return Number of replies.
+	 * * @param postId Specifies post ID the replies are linked to.
+	 * * @return Number of replies.
 	 */
 	public int getNumRepliesByPostId(long postId) {
 		int numReplies = 0;
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -252,21 +250,18 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: ArrayList getNumUnreadRepliesByPostId(int postId)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Returns the number of non-deleted unread replies of the
 	 * post with the given ID.
 	 * </p>
-	 * 
-	 * @param postId Specifies post ID the replies are linked to.
-	 * 
-	 * @return Number of unread replies.
+	 * * @param postId Specifies post ID the replies are linked to.
+	 * * @return Number of unread replies.
 	 */
 	public int getNumUnreadRepliesByPostId(long postId) {
 		int numUnreadReplies = 0;
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -282,15 +277,12 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: markRepliesAsRead(Post post, User currentUser)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Marks replies as read if user is the post author
 	 * </p>
-	 * 
-	 * @param post The post object
+	 * * @param post The post object
 	 * @param currentUser The current user
-	 * 
-	 * @return void
+	 * * @return void
 	 */
 	public void markRepliesAsRead(Post post, User currentUser) {
 		//Nullcheck
@@ -301,7 +293,8 @@ public class ReplyStorage {
 		
 		boolean requiresDbUpdate = false;
 		for (Reply reply : replies) {
-			if (!reply.isDeleted() && reply.getPostId() == post.getPostId() && !reply.isReadByPostAuthor()) {
+			if (!(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) && 
+				reply.getPostId() == post.getPostId() && !reply.isReadByPostAuthor()) {
 				reply.markRead();
 				requiresDbUpdate = true;
 			}
@@ -320,14 +313,11 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: ArrayList getRepliesByKeyword(String keyword)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters replies by keyword.
 	 * </p>
-	 * 
-	 * @param keyword	specifies keyword to search
-	 * 
-	 * @return filtered list with replies based on a keyword
+	 * * @param keyword	specifies keyword to search
+	 * * @return filtered list with replies based on a keyword
 	 */
 	public List<Reply> getRepliesByKeyword(String keyword) {
 		filteredReplies.clear();
@@ -339,7 +329,7 @@ public class ReplyStorage {
 		String keywordInLower = keyword.toLowerCase();
 		
 		for (Reply reply: replies) {
-			if(reply.isDeleted()) {
+			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -353,18 +343,15 @@ public class ReplyStorage {
 	
 	/*****
 	 * This soft deletes a reply in the list.
-	 * 
-	 * <p><b>Notes:</b></p>
+	 * * <p><b>Notes:</b></p>
 	 * <p>
 	 * Rules:
-	 * - Students cannot delete others' posts
+	 * - Only the author can delete their post
 	 * - Post is not removed, only marked deleted
 	 * </p>
-	 * 
-	 * @param reply		reply to be deleted
+	 * * @param reply		reply to be deleted
 	 * @param user		user using the system
-	 * 
-	 * @return string to update status and send error messages
+	 * * @return string to update status and send error messages
 	 */
 	public String deleteReply(Reply reply, User user) {
 		
@@ -376,16 +363,14 @@ public class ReplyStorage {
 			return "This reply has already been deleted";
 		}
 		
-		if(user.getNewStudentRole() && 
-				!reply.getAuthorUsername().equals(user.getUserName())) {
-			return "Students cannot delete someone else's reply";
+		if (!reply.getAuthorUsername().equals(user.getUserName())) {
+			return "You cannot delete someone else's reply";
 		}
 		
-		String deleteMessage = "<Reply has been deleted>";
 		try {
-			theDatabase.deleteReply(reply.getReplyId(), deleteMessage);
+			theDatabase.deleteReply(reply.getReplyId(), "");
 			reply.deleteReply();
-			reply.setContent(deleteMessage);
+			// Do NOT replace the content with deleteMessage, so higher privileges can still read it.
 		} catch(SQLException e) {
 			e.printStackTrace();
 			return e.getMessage();
@@ -398,16 +383,13 @@ public class ReplyStorage {
 	 * <p>
 	 * Method: String editReply(int replyId, User user, String content)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: This edits a post.
 	 * </p>
-	 * 
-	 * @param reply		reply to be edited
+	 * * @param reply		reply to be edited
 	 * @param user		user using the system
 	 * @param content	new content
-	 * 
-	 * @return string to update status and send error messages
+	 * * @return string to update status and send error messages
 	 */
 	public String editReply(Reply reply, User user, String content) {
 		
@@ -422,8 +404,7 @@ public class ReplyStorage {
 			return "Content cannot be empty";
 		}
 		
-		if(user.getNewStudentRole() && 
-				!reply.getAuthorUsername().equals(user.getUserName())) {
+		if (!reply.getAuthorUsername().equals(user.getUserName())) {
 			return "You cannot edit someone else's reply";
 		}
 		

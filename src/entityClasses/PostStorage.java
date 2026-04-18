@@ -172,17 +172,29 @@ public class PostStorage {
 	}
 	
 	/*****
+	 * <p> Method: hasHigherPrivilege(String authorUsername) </p>
+	 * <p> Description: Checks if the current user has strictly higher privilege than the author. </p>
+	 */
+	private boolean hasHigherPrivilege(String authorUsername) {
+		int currentPrivilege = theDatabase.getCurrentAdminRole() ? 2 : (theDatabase.getCurrentNewStaffRole() ? 1 : 0);
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		return currentPrivilege > authorPrivilege;
+	}
+
+	/*****
 	 * <p>
 	 * Method: ArrayList getAllPosts()
 	 * </p>
-	 * 
-	 * <p>Description: Retrieves all posts from the database.
+	 * * <p>Description: Retrieves all posts from the database.
 	 * </p>
-	 * 
-	 * @return list with all posts
+	 * * @return list with all posts
 	 */
 	public List<Post> getAllPosts() {
 		posts = theDatabase.getPostsList();
+		
+		// Filter out deleted posts for users without higher privilege
+		posts.removeIf(post -> post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername()));
+		
 		System.out.println(posts.size());
 		return posts;
 	}
@@ -191,20 +203,17 @@ public class PostStorage {
 	 * <p>
 	 * Method: ArrayList getPostsByCategory(PostCategory category)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters posts by category.
 	 * </p>
-	 * 
-	 * @param category	specifies the category of post to search
-	 * 
-	 * @return filtered list with posts based on category.
+	 * * @param category	specifies the category of post to search
+	 * * @return filtered list with posts based on category.
 	 */
 	public List<Post> getPostsByCategory(PostCategory category) {
 		filteredPosts.clear();
 		
 		for (Post post: posts) {
-			if(post.isDeleted()) {
+			if(post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -220,20 +229,17 @@ public class PostStorage {
 	 * <p>
 	 * Method: ArrayList getPostsByType(PostType type)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters posts by type.
 	 * </p>
-	 * 
-	 * @param type	specifies the type of post to search
-	 * 
-	 * @return filtered list with posts based on type.
+	 * * @param type	specifies the type of post to search
+	 * * @return filtered list with posts based on type.
 	 */
 	public List<Post> getPostsByType(PostType type) {
 		filteredPosts.clear();
 		
 		for (Post post: posts) {
-			if(post.isDeleted()) {
+			if(post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -249,20 +255,17 @@ public class PostStorage {
 	 * <p>
 	 * Method: ArrayList getPostsByDate(LocalDateTime date)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters posts by date.
 	 * </p>
-	 * 
-	 * @param date	specifies date to search
-	 * 
-	 * @return filtered list with posts based on date.
+	 * * @param date	specifies date to search
+	 * * @return filtered list with posts based on date.
 	 */
 	public List<Post> getPostsByDate(LocalDateTime date) {
 		filteredPosts.clear();
 		
 		for (Post post: posts) {
-			if(post.isDeleted()) {
+			if(post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -278,20 +281,17 @@ public class PostStorage {
 	 * <p>
 	 * Method: ArrayList getPostsByAuthor(String author)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters posts by author.
 	 * </p>
-	 * 
-	 * @param author	specifies author to search posts
-	 * 
-	 * @return filtered list with posts based on author.
+	 * * @param author	specifies author to search posts
+	 * * @return filtered list with posts based on author.
 	 */
 	public List<Post> getPostsByAuthor(String author) {
 		filteredPosts.clear();
 		
 		for (Post post: posts) {
-			if(post.isDeleted()) {
+			if(post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -307,14 +307,11 @@ public class PostStorage {
 	 * <p>
 	 * Method: ArrayList getPostsByKeyword(String keyword)
 	 * </p>
-	 * 
-	 * <p>
+	 * * <p>
 	 * Description: Filters posts by a certain keyword
 	 * </p>
-	 * 
-	 * @param keyword	specifies keyword to search
-	 * 
-	 * @return filtered list with posts based on a keyword
+	 * * @param keyword	specifies keyword to search
+	 * * @return filtered list with posts based on a keyword
 	 */
 	public List<Post> getPostsByKeyword(String keyword) {
 		filteredPosts.clear();
@@ -326,7 +323,7 @@ public class PostStorage {
 		String keywordInLower = keyword.toLowerCase();
 		
 		for (Post post: posts) {
-			if(post.isDeleted()) {
+			if(post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername())) {
 				continue;
 			}
 			
@@ -341,18 +338,15 @@ public class PostStorage {
 	
 	/*****
 	 * This soft deletes a post in the list.
-	 * 
-	 * <p><b>Notes:</b></p>
+	 * * <p><b>Notes:</b></p>
 	 * <p>
 	 * Rules:
-	 * - Students cannot delete others' posts
+	 * - Only the author can delete their post
 	 * - Post is not removed, only marked deleted
 	 * </p>
-	 * 
-	 * @param post		post to be deleted
+	 * * @param post		post to be deleted
 	 * @param user		user using the system
-	 * 
-	 * @return string to update status and send error messages
+	 * * @return string to update status and send error messages
 	 */
 	public String deletePost(Post post, User user) {
 		
@@ -364,16 +358,14 @@ public class PostStorage {
 			return "This post has already been deleted";
 		}
 		
-		if(user.getNewStudentRole() && 
-				!post.getAuthorUsername().equals(user.getUserName())) {
-			return "Students cannot delete someone else's post";
+		if (!post.getAuthorUsername().equals(user.getUserName())) {
+			return "You cannot delete someone else's post";
 		}
 		
-		String deleteMessage = "<Post has been deleted>";
 		try {
-			theDatabase.deletePost(post.getPostId(), deleteMessage);
+			theDatabase.deletePost(post.getPostId(), "");
 			post.deletePost();
-			post.setContent(deleteMessage);
+			// Do NOT replace the content with deleteMessage, so higher privileges can still read it.
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "Error deleting from database";
@@ -384,20 +376,17 @@ public class PostStorage {
 	
 	/*****
 	 * This edits a post.
-	 * 
-	 * <p><b>Notes:</b></p>
+	 * * <p><b>Notes:</b></p>
 	 * <p>
 	 * Rules:
 	 * - The post cannot be deleted
 	 * - User's username has to match author name
 	 * </p>
-	 * 
-	 * @param post		post to be edited
+	 * * @param post		post to be edited
 	 * @param user		user using the system
 	 * @param title		new title
 	 * @param content	new content
-	 * 
-	 * @return string to update status and send error messages
+	 * * @return string to update status and send error messages
 	 */
 	public String editPost(Post post, User user, String title, String content) {
 		if (post == null) {
@@ -415,8 +404,7 @@ public class PostStorage {
 			return "Content cannot be empty";
 		}
 		
-		if(user.getNewStudentRole() && 
-				!post.getAuthorUsername().equals(user.getUserName())) {
+		if (!post.getAuthorUsername().equals(user.getUserName())) {
 			return "You cannot edit someone else's post";
 		}
 		

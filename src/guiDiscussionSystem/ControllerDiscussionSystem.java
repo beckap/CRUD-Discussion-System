@@ -215,23 +215,29 @@ public class ControllerDiscussionSystem {
 	}
 	
 	/**********
+	 * <p> Method: hasHigherPrivilege(User currentUser, String authorUsername) </p>
+	 * <p> Description: Checks if the current user has strictly higher privilege than the author. </p>
+	 */
+	protected static boolean hasHigherPrivilege(User currentUser, String authorUsername) {
+		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
+		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
+		return yourPrivilege > authorPrivilege;
+	}
+
+	/**********
 	 * <p> Method: canHidePost(User currentUser, String authorUsername) </p>
-	 * * <p> Description: Checks your privilege level compared to the author.
+	 * <p> Description: Checks your privilege level compared to the author.
 	 * Staff+ can hide posts of lesser-privileged users. </p>
 	 */
 	protected static boolean canHidePost(User currentUser, String authorUsername) {
-		// Check your privilege
-		int yourPrivilege = currentUser.getAdminRole() ? 2 : (currentUser.getNewStaffRole() ? 1 : 0);
 		
-		// If the user is a Student (0), they can never hide others' posts
-		if (yourPrivilege == 0) return false;
+		// Students can't hide
+		if (currentUser.getNewStudentRole()) return false;
 		
 		// Can users hide their own posts? Yes, they can!
 		if (currentUser.getUserName().equals(authorUsername)) return true;
-
-		int authorPrivilege = theDatabase.getUserPrivilegeLevel(authorUsername);
 		
-		return yourPrivilege > authorPrivilege;
+		return hasHigherPrivilege(currentUser, authorUsername);
 	}
 	
 	/**********
