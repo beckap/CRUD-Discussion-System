@@ -1,5 +1,6 @@
 package guiGradingDashboard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /***
@@ -7,11 +8,13 @@ import java.util.List;
  * Title: ModelGradingDashboard Class.
  * </p>
  * 
+ * <p><b> Description: 
+ * </b></p>
+ * 
  * <p>
- * Description: Provides data access methods for the UI. This class is the bridge between
+ * Provides data access methods for the UI. This class is the bridge between
  * the Controller/View classes and the database. It retrieves a list of students from storage.
  * </p>
- * 
  * 
  * @author Becka Perez Guerrero
  * 
@@ -32,5 +35,16 @@ public class ModelGradingDashboard {
      */
 	public static List<String> getUserList() {
 		return ControllerGradingDashboard.theDatabase.getStudentUserList();
+	}
+	
+	/**
+	 * 
+	 * @return a list containing letter grades
+	 */
+	public static List<String> getGradesList() {
+		List<String> letterGrades = new ArrayList<>(List.of("<Select a grade>", "A", 
+				"A-", "B+", "B", "B-", "C+", "C", "C-", "D", "F"));
+		
+		return letterGrades;
 	}
 }

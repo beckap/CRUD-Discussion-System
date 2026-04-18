@@ -58,12 +58,14 @@
 	-fx-border-color: #7289da;
 	-fx-border-radius: 15px;
 	-fx-border-width: 1.5px;
+	-fx-background-radius: 15px;
 }
 
 .text-field:focused, .text-area:focused {
 	-fx-border-color:  #6D83D1;
 	-fx-border-radius: 15px;
 	-fx-border-width: 1.9px;
+	-fx-background-radius: 15px;
 }
 
 .text-area {
@@ -74,6 +76,12 @@
 	-fx-control-inner-background: transparent;
 	-fx-background-radius: 15px;
 	-fx-border-radius: 15px;
+	-fx-background-insets: 0;
+}
+
+.text-area .prompt-text {
+    -fx-fill: #8e9297;
+    -fx-opacity: 1.0;
 }
 
 .text-area .content {
@@ -81,6 +89,12 @@
 	-fx-background-radius: 15px;
 	-fx-border-color: #1e2124;
 	-fx-border-radius: 15px;
+	-fx-background-insets: 0;
+}
+
+.text-area:focused {
+	-fx-background-insets: 0;
+	-fx-background-color: transparent;
 }
 
 .radio-button {
@@ -313,9 +327,10 @@
 
 .progress-indicator {
 	-fx-progress-color: #7289da;
+	-fx-background-color: transparent; 
 }
 
-.progress-indicator .spinner:hover {
+.progress-indicator:hover {
 	-fx-progress-color: #677BC4;
 }
 
@@ -325,10 +340,10 @@
 }
 
 .progress-indicator .indicator:hover {
-	-fx-background-color: #232528;
     -fx-border-color: #455db3;
 }
+
 .progress-indicator .percentage {
     -fx-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 18px;
 }

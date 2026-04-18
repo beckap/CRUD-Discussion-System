@@ -114,7 +114,7 @@ public class Database {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: Used to create new instances of the two database tables used by
+	 * Description: Used to create new instances of the database tables used by
 	 * this class.
 	 * </p>
 	 * 
@@ -154,6 +154,9 @@ public class Database {
 				"isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE, isReadByPostAuthor BOOL DEFAULT FALSE," +
 				" visibilityLevel INT DEFAULT 0, publishTime BIGINT DEFAULT 0)";
 		statement.execute(repliesTable);
+		
+		String gradeTable = "CREATE TABLE IF NOT EXISTS Grades (studentUsername VARCHAR(255), studentGrade CHAR(2),"
+				+ " staffNotes VARCHAR(MAX))";
 	}
 
 	/*******

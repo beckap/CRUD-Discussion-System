@@ -251,6 +251,7 @@ public class ControllerPostReplies {
 		VBox layout = new VBox(10);
 
 		TextArea content = new TextArea();
+		content.setWrapText(true);
 		content.setMinWidth(450);
 		content.setPrefRowCount(8);
 		

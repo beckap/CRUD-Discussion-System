@@ -12,6 +12,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
@@ -45,8 +46,30 @@ public class ViewGradingDashboard {
 	 */
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
+	/**
+	 * Page title
+	 */
 	protected static Label labelPageTitle = new Label();
+	
+	/**
+	 * Label to indicate user to select a student
+	 */
 	protected static Label labelSelect = new Label();
+	
+	/**
+	 * Label to indicate the user to set a student's grade 
+	 */
+	protected static Label labelGrade = new Label();
+	
+	/**
+	 * Label to indicate the user to enter feedback
+	 */
+	protected static Label labelFeedback = new Label();
+	
+	/**
+	 * Label to indicate selected student's grade
+	 */
+	protected static Label labelStudentGrade = new Label();
 	
 	/**
 	 * List of students for the comboBox
@@ -54,9 +77,27 @@ public class ViewGradingDashboard {
 	protected static List<String> students = new ArrayList<String>();
 	
 	/**
-	 * ComboBox containing the list of students for the staff to choose from
+	 * ComboBox that allows the staff members to select students
 	 */
 	protected static ComboBox<String> comboStudents = new ComboBox<String>();
+	
+	/**
+	 * List of grades that can be assigned to a student
+	 */
+	protected static List<String> grades = new ArrayList<String>();
+	
+	/**
+	 * ComboBox that allows to select a grade for the selected student
+	 */
+	protected static ComboBox<String> comboGrades = new ComboBox<String>();
+	
+	/**
+	 * Provides the staff member space to provide student feedback
+	 */
+	protected static TextArea feedbackArea = new TextArea();
+	/**
+	 * Progress indicator in a Determinate state to show student participation progress
+	 */
 	protected static ProgressIndicator studentProgress = new ProgressIndicator(0);
 	
 	/***
@@ -73,6 +114,11 @@ public class ViewGradingDashboard {
 	 * This button is used to logout
 	 */
 	protected static Button button_Logout = new Button("Logout");
+	
+	/**
+	 * This button is used to quit the application
+	 */
+	protected static Button button_Quit = new Button("Quit");
 	/***
 	 * These attributes are used to configure the page and populate it with this
 	 * user's information
@@ -145,15 +191,16 @@ public class ViewGradingDashboard {
 		theGradingDashboardScene = new Scene(theRootPane, width, height);
 		labelPageTitle.setText("Student Participation");
 		setupLabelUI(labelPageTitle, width, Pos.CENTER, 0, 5);
-		labelSelect.setText("Select a student:");
-		setupLabelUI(labelSelect, 190, Pos.CENTER, 50, 80);
+		labelSelect.setText("Student:");
+		labelSelect.setStyle("-fx-font-size: 16px;");
+		setupLabelUI(labelSelect, 100, Pos.CENTER, 50, 80);
 		
 		students = ModelGradingDashboard.getUserList();
 		if (students != null) {
 			comboStudents.setItems(FXCollections.observableArrayList(students));
 		}
 		comboStudents.setLayoutX(80);
-		comboStudents.setLayoutY(100);
+		comboStudents.setLayoutY(110);
 		comboStudents.getSelectionModel().selectFirst();
 		
 		comboStudents.setOnAction((_) -> {
@@ -173,12 +220,17 @@ public class ViewGradingDashboard {
 			// progress bar
 			if (!studentUsername.equals("<Select a User>")) {
 				ControllerGradingDashboard.addProgress(studentUsername);
+				ControllerGradingDashboard.setStudentGrade(studentUsername);
+				ControllerGradingDashboard.setStudentCurrentGrade(studentUsername);
 			}
 		});
 		
 		studentProgress.setLayoutX(80);
 		studentProgress.setLayoutY(170);
 		studentProgress.setMinSize(220, 220);
+		
+		comboGrades.setVisible(false);
+		feedbackArea.setVisible(false);
 		
 		setupButtonUI(button_Return, 210, Pos.CENTER, 20, 540);
 		button_Return.setOnAction((_) -> {
@@ -190,6 +242,11 @@ public class ViewGradingDashboard {
 			ControllerGradingDashboard.performLogout();
 		});
 		
+		setupButtonUI(button_Quit, 210, Pos.CENTER, 570, 540);
+		button_Quit.setOnAction((_) -> {
+			ControllerGradingDashboard.performQuit();
+		});
+		
 		String css = getClass().getResource("/application.css").toExternalForm();
 		theGradingDashboardScene.getStylesheets().add(css);
 		labelPageTitle.getStyleClass().add("title");
@@ -197,8 +254,9 @@ public class ViewGradingDashboard {
 		DialogPane error1 = error.getDialogPane();
 		error1.getStylesheets().add(css);
 		
-		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, button_Return,
-				button_Logout);
+		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, 
+				labelStudentGrade, labelGrade, comboGrades, labelFeedback, feedbackArea, 
+				button_Return, button_Logout, button_Quit);
 		theStage.setScene(theGradingDashboardScene);
 		theStage.show();
 		
@@ -213,7 +271,6 @@ public class ViewGradingDashboard {
 	 * @param x  The location from the left edge (x axis)
 	 * @param y  The location from the top (y axis)
 	 */
-
 	private static void setupLabelUI(Label l, double w, Pos p, double x, double y) {
 		l.setMinWidth(w);
 		l.setAlignment(p);

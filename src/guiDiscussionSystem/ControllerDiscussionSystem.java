@@ -130,6 +130,7 @@ public class ControllerDiscussionSystem {
 		TextField title = new TextField();
 		title.setMinWidth(450);
 		TextArea content = new TextArea();
+		content.setWrapText(true);
 		content.setMinWidth(450);
 		content.setPrefRowCount(8);
 		
