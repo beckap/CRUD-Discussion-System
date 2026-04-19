@@ -258,11 +258,11 @@ public class ControllerPostReplies {
 		Label contentLabel = new Label("Content: ");
 		
 		// character count label with default value of 0
-		Label label_characterCount = new Label("Characters: 0 / 10");
+		Label label_characterCount = new Label("Characters: 0 / 1000");
 		label_characterCount.setStyle("-fx-text-fill: white;");
 		
 		// real-time update feature of the character count
-		int maxAllowedChars = 10;
+		int maxAllowedChars = 1000;
 		content.textProperty().addListener((obsText, oldText, newText) -> {
 			
 			int charLength = newText.length();

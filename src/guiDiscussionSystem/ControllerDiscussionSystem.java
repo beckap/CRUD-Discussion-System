@@ -90,7 +90,8 @@ public class ControllerDiscussionSystem {
 	 * error message if the user did not enter something correctly. 
 	 * 
 	 * To create a post, the user needs to select a type and category, and they have to
-	 * enter a title and the content.
+	 * enter a title and the content. A character count displays to the user to ensure they
+	 * stay between the lower and upper limit of allowed characters in a new post.
 	 * </p>
 	 * 
 	 */
@@ -134,11 +135,11 @@ public class ControllerDiscussionSystem {
 		content.setPrefRowCount(8);
 		
 		// character count label with default value of 0
-		Label label_characterCount = new Label("Characters: 0 / 10");
+		Label label_characterCount = new Label("Characters: 0 / 1000");
 		label_characterCount.setStyle("-fx-text-fill: white;");
 		
 		// real-time update feature of the character count
-		int maxAllowedChars = 10;
+		int maxAllowedChars = 1000;
 		content.textProperty().addListener((obsText, oldText, newText) -> {
 			
 			int charLength = newText.length();

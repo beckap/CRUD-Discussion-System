@@ -188,14 +188,4 @@ class CharacterCountAnalyzerTest {
     	analyzer.setInput("Hello");
         assertEquals(5, analyzer.getCharacterCount());
     }
-    
-//	/**
-//	 * FUTURE Test #15: Character count does not update if user has no valid role
-//	 */
-//    @Test
-//    void testCharacterCountWithNoRole() {
-//    	CharacterCountAnalyzer analyzer = new CharacterCountAnalyzer();
-//    	analyzer.setInput("Hello");
-//        assertEquals(-1, analyzer.getCharacterCount());
-//    }
 }
