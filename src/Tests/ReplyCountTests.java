@@ -292,10 +292,61 @@ class ReplyCountTests {
 	}
 	
 	/***
-	 * Tests that a student with exactly 3 unique replies satisfies the requirement.
+	 * Tests that a student with exactly 0 unique replies calculates correct
+	 * percentage for the evaluation.
 	 */
 	@Test
-	void correctPercentageParticipation() {
+	void correctPercentageParticipationWith0UniqueReplies() {
+		Database mockDB = mock(Database.class);
+		ReplyStorage storage = new ReplyStorage(mockDB);
+		List<Reply> fakeList = new ArrayList<>();
+		student1.setUserName("rperezg4");
+		
+		when(mockDB.getRepliesList()).thenReturn(fakeList);
+		try {
+			ReplyAnalyzer analyzer = new ReplyAnalyzer(storage, "rperezg4");
+			double progress = analyzer.getParticipationProgress();
+			assertEquals(0, analyzer.countUniqueReplies());
+			assertEquals(0.0/3.0, progress);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/***
+	 * Tests that a student with exactly 1 unique replies calculates correct
+	 * percentage for the evaluation.
+	 */
+	@Test
+	void correctPercentageParticipationWith1UniqueReply() {
+		Database mockDB = mock(Database.class);
+		ReplyStorage storage = new ReplyStorage(mockDB);
+		List<Reply> fakeList = new ArrayList<>();
+		student1.setUserName("rperezg4");
+		for (int i = 1; i <= 1; i++) {
+			for (int j = 1; j <= 2; j++) {
+				storage.createReply("Content of reply #" + j, student1, i);
+				fakeList.add(new Reply(j, i, "Content of reply #" + j, student1.getUserName()));
+			}
+		}
+		
+		when(mockDB.getRepliesList()).thenReturn(fakeList);
+		try {
+			ReplyAnalyzer analyzer = new ReplyAnalyzer(storage, "rperezg4");
+			double progress = analyzer.getParticipationProgress();
+			assertEquals(1, analyzer.countUniqueReplies());
+			assertEquals(1.0/3.0, progress);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/***
+	 * Tests that a student with exactly 2 unique replies calculates correct
+	 * percentage for the evaluation.
+	 */
+	@Test
+	void correctPercentageParticipationWith2UniqueReplies() {
 		Database mockDB = mock(Database.class);
 		ReplyStorage storage = new ReplyStorage(mockDB);
 		List<Reply> fakeList = new ArrayList<>();
@@ -318,4 +369,59 @@ class ReplyCountTests {
 		}
 	}
 
+	/***
+	 * Tests that a student with exactly 3 unique replies calculates correct
+	 * percentage for the evaluation.
+	 */
+	@Test
+	void correctPercentageParticipationWith3UniqueReplies() {
+		Database mockDB = mock(Database.class);
+		ReplyStorage storage = new ReplyStorage(mockDB);
+		List<Reply> fakeList = new ArrayList<>();
+		student1.setUserName("rperezg4");
+		for (int i = 1; i <= 3; i++) {
+			for (int j = 1; j <= 2; j++) {
+				storage.createReply("Content of reply #" + j, student1, i);
+				fakeList.add(new Reply(j, i, "Content of reply #" + j, student1.getUserName()));
+			}
+		}
+		
+		when(mockDB.getRepliesList()).thenReturn(fakeList);
+		try {
+			ReplyAnalyzer analyzer = new ReplyAnalyzer(storage, "rperezg4");
+			double progress = analyzer.getParticipationProgress();
+			assertEquals(3, analyzer.countUniqueReplies());
+			assertEquals(3.0/3.0, progress);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/***
+	 * Tests that a student with exactly 4 unique replies calculates correct
+	 * percentage for the evaluation.
+	 */
+	@Test
+	void correctPercentageParticipationWith4UniqueReplies() {
+		Database mockDB = mock(Database.class);
+		ReplyStorage storage = new ReplyStorage(mockDB);
+		List<Reply> fakeList = new ArrayList<>();
+		student1.setUserName("rperezg4");
+		for (int i = 1; i <= 4; i++) {
+			for (int j = 1; j <= 2; j++) {
+				storage.createReply("Content of reply #" + j, student1, i);
+				fakeList.add(new Reply(j, i, "Content of reply #" + j, student1.getUserName()));
+			}
+		}
+		
+		when(mockDB.getRepliesList()).thenReturn(fakeList);
+		try {
+			ReplyAnalyzer analyzer = new ReplyAnalyzer(storage, "rperezg4");
+			double progress = analyzer.getParticipationProgress();
+			assertEquals(4, analyzer.countUniqueReplies());
+			assertEquals(1, progress);
+		} catch (AnalyzerException e) {
+			e.printStackTrace();
+		}
+	}
 }
