@@ -104,7 +104,6 @@ public class ControllerDiscussionSystem {
 		RadioButton homeworkButton = new RadioButton("Homework");
 		RadioButton examsButton = new RadioButton("Exams");
 		RadioButton lecturesButton = new RadioButton("Lectures");
-
 		
 		ButtonType createPost = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
 		postDialog.getDialogPane().getButtonTypes().addAll(createPost, ButtonType.CANCEL);
@@ -134,6 +133,32 @@ public class ControllerDiscussionSystem {
 		content.setMinWidth(450);
 		content.setPrefRowCount(8);
 		
+		// character count label with default value of 0
+		Label label_characterCount = new Label("Characters: 0 / 10");
+		label_characterCount.setStyle("-fx-text-fill: white;");
+		
+		// real-time update feature of the character count
+		int maxAllowedChars = 10;
+		content.textProperty().addListener((obsText, oldText, newText) -> {
+			
+			int charLength = newText.length();
+			
+			// stops the user from typing if max char limit reached
+			if(charLength > maxAllowedChars) {
+				content.setText(oldText);
+				return;
+			} 
+			
+			label_characterCount.setText("Characters: " + charLength + " / " + maxAllowedChars);
+			
+			// turns the char counter text red if max limit reached, then back to white if under limit
+			if(charLength == maxAllowedChars) {
+				label_characterCount.setStyle("-fx-text-fill: red;");
+			} else {
+				label_characterCount.setStyle("-fx-text-fill: white;");
+			}
+		});
+		
 		typeLayout.getChildren().addAll(discussionButton,questionButton);
 		categoryLayout.getChildren().addAll(generalButton,homeworkButton,
 				examsButton,lecturesButton);
@@ -146,7 +171,7 @@ public class ControllerDiscussionSystem {
 		categoryToggle.selectToggle(generalButton);
 		
 		layout.getChildren().addAll(typeLabel,typeLayout, 
-				titleLabel, title, categoryLabel, categoryLayout, contentLabel, content);
+				titleLabel, title, categoryLabel, categoryLayout, contentLabel, content, label_characterCount);
 		
 		postDialog.getDialogPane().setContent(layout);
 		postDialog.getDialogPane().setPrefHeight(500);
