@@ -15,7 +15,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 /*******
@@ -26,7 +25,6 @@ import javafx.stage.Stage;
  * <p>
  * Description: The Java/FX-based page for the discussion system of the application.
  * </p>
- * 
  * 
  * @author Becka Perez Guerrero
  * 
@@ -72,6 +70,11 @@ public class ViewGradingDashboard {
 	protected static Label labelStudentGrade = new Label();
 	
 	/**
+	 * Label to indicate previous student's feedback
+	 */
+	protected static Label labelPastFeedback = new Label();
+	
+	/**
 	 * List of students for the comboBox
 	 */
 	protected static List<String> students = new ArrayList<String>();
@@ -100,10 +103,15 @@ public class ViewGradingDashboard {
 	 */
 	protected static ProgressIndicator studentProgress = new ProgressIndicator(0);
 	
-	/***
-	 * This is a separator and it is used to partition the GUI for various tasks
+	/**
+	 * Button to update a student's grade and feedback based on reply participation
 	 */
-	protected static Line line_Separator2 = new Line(20, 95, width - 20, 95);
+	protected static Button buttonUpdate = new Button("Update");
+	
+	/**
+	 * Label displays a success message when a successful data modification is made
+	 */
+	protected static Label labelSuccess = new Label();
 	
 	/**
 	 * This button is used to return to the previous page, usually the Staff home page
@@ -119,6 +127,7 @@ public class ViewGradingDashboard {
 	 * This button is used to quit the application
 	 */
 	protected static Button button_Quit = new Button("Quit");
+	
 	/***
 	 * These attributes are used to configure the page and populate it with this
 	 * user's information
@@ -185,7 +194,6 @@ public class ViewGradingDashboard {
 	 * </p>
 	 * 
 	 */
-	@SuppressWarnings("null")
 	public ViewGradingDashboard() {
 		theRootPane = new Pane();
 		theGradingDashboardScene = new Scene(theRootPane, width, height);
@@ -221,16 +229,28 @@ public class ViewGradingDashboard {
 			if (!studentUsername.equals("<Select a User>")) {
 				ControllerGradingDashboard.addProgress(studentUsername);
 				ControllerGradingDashboard.setStudentGrade(studentUsername);
-				ControllerGradingDashboard.setStudentCurrentGrade(studentUsername);
+				ControllerGradingDashboard.updateStudentCurrentGrade(studentUsername);
 			}
 		});
 		
-		studentProgress.setLayoutX(80);
-		studentProgress.setLayoutY(170);
-		studentProgress.setMinSize(220, 220);
+		studentProgress.setLayoutX(60);
+		studentProgress.setLayoutY(180);
+		studentProgress.setMinSize(240, 240);
 		
 		comboGrades.setVisible(false);
 		feedbackArea.setVisible(false);
+		labelGrade.setVisible(false);
+		labelFeedback.setVisible(false);
+		labelStudentGrade.setVisible(false);
+		
+		labelSuccess.setVisible(false);
+		setupLabelUI(labelSuccess, 70, Pos.CENTER, 470, 330);
+		
+		setupButtonUI(buttonUpdate, 70, Pos.CENTER, 590, 330);
+		buttonUpdate.setVisible(false);
+		
+		setupLabelUI(labelPastFeedback, 10, Pos.CENTER, 370, 390);
+		labelPastFeedback.setVisible(false);
 		
 		setupButtonUI(button_Return, 210, Pos.CENTER, 20, 540);
 		button_Return.setOnAction((_) -> {
@@ -255,8 +275,8 @@ public class ViewGradingDashboard {
 		error1.getStylesheets().add(css);
 		
 		theRootPane.getChildren().addAll(labelPageTitle, labelSelect, comboStudents, studentProgress, 
-				labelStudentGrade, labelGrade, comboGrades, labelFeedback, feedbackArea, 
-				button_Return, button_Logout, button_Quit);
+				labelStudentGrade, labelGrade, comboGrades, labelFeedback, feedbackArea, labelSuccess,
+				buttonUpdate, button_Return, button_Logout, button_Quit);
 		theStage.setScene(theGradingDashboardScene);
 		theStage.show();
 		
@@ -266,7 +286,7 @@ public class ViewGradingDashboard {
 	 * Private local method to initialize the standard fields for a label
 	 * 
 	 * @param l  The Label object to be initialized
-	 * @param w  The width of the Button
+	 * @param w  The width of the Label
 	 * @param p  The alignment (e.g. left, centered, or right)
 	 * @param x  The location from the left edge (x axis)
 	 * @param y  The location from the top (y axis)

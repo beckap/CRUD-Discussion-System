@@ -1,10 +1,14 @@
 package guiGradingDashboard;
 
+import java.sql.SQLException;
+
 import database.Database;
 import entityClasses.AnalyzerException;
 import entityClasses.ReplyAnalyzer;
 import entityClasses.ReplyStorage;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
+import javafx.util.Duration;
 
 /*******
  * <p>
@@ -74,7 +78,6 @@ public class ControllerGradingDashboard {
 	 * </p>
 	 * 
 	 */
-	@SuppressWarnings("null")
 	protected static void repaintTheWindow() {
 		// Clear what had been displayed
 		ViewGradingDashboard.theRootPane.getChildren().clear();
@@ -105,12 +108,18 @@ public class ControllerGradingDashboard {
 			if (!studentUsername.equals("<Select a User>")) {
 				addProgress(studentUsername);
 				setStudentGrade(studentUsername);
-				setStudentCurrentGrade(studentUsername);
+				updateStudentCurrentGrade(studentUsername);
 			}
 		});
 		
 		ViewGradingDashboard.comboGrades.setVisible(false);
 		ViewGradingDashboard.feedbackArea.setVisible(false);
+		ViewGradingDashboard.labelGrade.setVisible(false);
+		ViewGradingDashboard.labelFeedback.setVisible(false);
+		ViewGradingDashboard.labelStudentGrade.setVisible(false);
+		ViewGradingDashboard.buttonUpdate.setVisible(false);
+		ViewGradingDashboard.labelSuccess.setVisible(false);
+		ViewGradingDashboard.labelPastFeedback.setVisible(false);	
 		
 		// Define the view to show the user
 		ViewGradingDashboard.theRootPane.getChildren().addAll(ViewGradingDashboard.labelPageTitle,
@@ -118,7 +127,9 @@ public class ControllerGradingDashboard {
 				ViewGradingDashboard.studentProgress, ViewGradingDashboard.labelGrade,
 				ViewGradingDashboard.comboGrades, ViewGradingDashboard.feedbackArea,
 				ViewGradingDashboard.labelFeedback, ViewGradingDashboard.labelStudentGrade,
-				ViewGradingDashboard.button_Return, ViewGradingDashboard.button_Logout, ViewGradingDashboard.button_Quit);
+				ViewGradingDashboard.buttonUpdate, ViewGradingDashboard.button_Return,
+				ViewGradingDashboard.labelSuccess, ViewGradingDashboard.labelPastFeedback,
+				ViewGradingDashboard.button_Logout, ViewGradingDashboard.button_Quit);
 
 		// Set the title for the window
 		ViewGradingDashboard.theStage.setTitle("Grading Dashboard");
@@ -155,12 +166,20 @@ public class ControllerGradingDashboard {
 	}
 	
 	/**
-     * Prepares the grade selection UI for the selected student.
+     * Configures and displays grading controls for the selected student.
+     * 
      * <p>
-     * This method updates the grade UI.
+     * This method updates the grading section of the UI. In addition, 
+     * it calls updateGradeAndFeedback(student, grade, feedback) from the Model 
+     * class to update data stored in the database.
+     * Once this is done, it updates the student's current grade using the method
+     * updateStudentCurrentGrade(student).
+     * 
+     * This assumes components have been added to the scene, it just updates their content 
+     * and visibility.
      * </p>
      *
-     * @param student	the username of the selected student
+     * @param student	the username of the selected student whose grade will be changed
      */
 	protected static void setStudentGrade(String student) {
 		// Set grades combo box
@@ -168,6 +187,7 @@ public class ControllerGradingDashboard {
 		ViewGradingDashboard.labelGrade.setStyle("-fx-font-size: 16px;");
 		ViewGradingDashboard.labelGrade.setLayoutX(370);
 		ViewGradingDashboard.labelGrade.setLayoutY(80);
+		ViewGradingDashboard.labelGrade.setVisible(true);
 		
 		ViewGradingDashboard.grades = ModelGradingDashboard.getGradesList();
 		if (ViewGradingDashboard.grades != null) {
@@ -183,23 +203,110 @@ public class ControllerGradingDashboard {
 		ViewGradingDashboard.labelFeedback.setText("Enter feedback:");
 		ViewGradingDashboard.labelFeedback.setStyle("-fx-font-size: 16px;");
 		ViewGradingDashboard.labelFeedback.setLayoutX(370);
-		ViewGradingDashboard.labelFeedback.setLayoutY(160);
+		ViewGradingDashboard.labelFeedback.setLayoutY(150);
+		ViewGradingDashboard.labelFeedback.setVisible(true);
 		
 		ViewGradingDashboard.feedbackArea.setLayoutX(380);
-		ViewGradingDashboard.feedbackArea.setLayoutY(190);
+		ViewGradingDashboard.feedbackArea.setLayoutY(175);
 		ViewGradingDashboard.feedbackArea.setPrefWidth(300);
 		ViewGradingDashboard.feedbackArea.setPrefHeight(150);
 		ViewGradingDashboard.feedbackArea.setWrapText(true);
 		ViewGradingDashboard.feedbackArea.clear();
 		ViewGradingDashboard.feedbackArea.setVisible(true);
+		
+		ViewGradingDashboard.buttonUpdate.setVisible(true);
+		ViewGradingDashboard.buttonUpdate.setOnAction((_) -> {
+			if (ViewGradingDashboard.comboGrades.getSelectionModel().getSelectedItem().equals("<Select a grade>")) {
+				ViewGradingDashboard.error.setTitle("Error!");
+				ViewGradingDashboard.error.setHeaderText(null);
+				ViewGradingDashboard.error.setContentText("Please select a grade.");
+				ViewGradingDashboard.error.showAndWait();
+				return;
+			}
+			
+			if (ViewGradingDashboard.feedbackArea.getText().length() > 320) {
+				ViewGradingDashboard.error.setTitle("Error!");
+				ViewGradingDashboard.error.setHeaderText(null);
+				ViewGradingDashboard.error.setContentText("Feedback is too long! Try again.");
+				ViewGradingDashboard.error.showAndWait();
+				return;
+			}
+			
+			try { 
+				ModelGradingDashboard.updateGradeAndFeedback(student, 
+					ViewGradingDashboard.comboGrades.getSelectionModel().getSelectedItem(),
+					ViewGradingDashboard.feedbackArea.getText());
+			} catch (SQLException e) {
+				ViewGradingDashboard.error.setContentText(e.getMessage());
+				ViewGradingDashboard.error.setHeaderText(null);
+				ViewGradingDashboard.error.setTitle("Database storing error");
+				ViewGradingDashboard.error.showAndWait();
+			}
+			
+			updateStudentCurrentGrade(student);
+			ViewGradingDashboard.feedbackArea.clear();
+			
+			ViewGradingDashboard.labelSuccess.setText("Grade Updated!");
+			ViewGradingDashboard.labelSuccess.setStyle("-fx-text-fill: #808388;-fx-text-size:16px;");
+			ViewGradingDashboard.labelSuccess.setVisible(true);
+			
+			// Set up transition so labelSuccess displays only for a few seconds
+			PauseTransition pause = new PauseTransition(Duration.seconds(2));
+		    pause.setOnFinished((_) -> ViewGradingDashboard.labelSuccess.setVisible(false)); // Hide after delay
+		    pause.play();
+		});
 	}
 	
-	protected static void setStudentCurrentGrade(String student) {
-		ViewGradingDashboard.labelStudentGrade.setText("Student's current grade: N/A");
-		ViewGradingDashboard.labelStudentGrade.setStyle("-fx-font-size: 16px;");
-		ViewGradingDashboard.labelStudentGrade.setLayoutX(80);
-		ViewGradingDashboard.labelStudentGrade.setLayoutY(410);
+	/**
+	 * Displays the current grade of the selected student.
+	 * 
+	 * <p>
+	 * This method updates the label responsible for showing the student’s
+	 * existing grade. If no grade is available, a default value
+	 * is displayed. 
+	 * 
+	 * Calls getStudentGrade(student) and getStudentFeeback(student) methods
+	 * from the Model class to aid the process.
+	 * </p>
+	 *
+	 *
+	 * @param student the username of the student whose current grade is to be displayed
+	 */
+	protected static void updateStudentCurrentGrade(String student) {
+		try {
+			String grade = ModelGradingDashboard.getStudentGrade(student);
+			String feedback = ModelGradingDashboard.getStudentFeedback(student);
+			
+			if (grade == null) {
+				ViewGradingDashboard.labelStudentGrade.setText("Student's current grade: N/A");
+			} else {
+				ViewGradingDashboard.labelStudentGrade.setText("Student's current grade: " + grade);
+			}
+			
+			if (feedback == null) {
+				ViewGradingDashboard.labelPastFeedback.setText("Previous feedback: N/A");
+			} else if(feedback.isEmpty()) {
+				ViewGradingDashboard.labelPastFeedback.setText("Previous feedback: No previous feedback.");
+			} else {
+				ViewGradingDashboard.labelPastFeedback.setText("Previous feedback: " + feedback);
+			}
+		} catch (SQLException e) {
+			ViewGradingDashboard.error.setContentText(e.getMessage());
+			ViewGradingDashboard.error.setHeaderText(null);
+			ViewGradingDashboard.error.setTitle("Database retrieval error");
+			ViewGradingDashboard.error.showAndWait();
+		}
+		
+		ViewGradingDashboard.labelStudentGrade.setLayoutX(370);
+		ViewGradingDashboard.labelStudentGrade.setLayoutY(370);
+		ViewGradingDashboard.labelStudentGrade.setVisible(true);
+		ViewGradingDashboard.labelPastFeedback.setWrapText(true);
+		ViewGradingDashboard.labelPastFeedback.setMaxWidth(400);
+		ViewGradingDashboard.labelPastFeedback.setMaxHeight(160);
+		ViewGradingDashboard.labelPastFeedback.setVisible(true);
 	}
+	
+	
 	/**********
 	 * <p> Method: performReturn() </p>
 	 * 

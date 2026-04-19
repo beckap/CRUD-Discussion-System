@@ -157,6 +157,7 @@ public class Database {
 		
 		String gradeTable = "CREATE TABLE IF NOT EXISTS Grades (studentUsername VARCHAR(255), studentGrade CHAR(2),"
 				+ " staffNotes VARCHAR(MAX))";
+		statement.execute(gradeTable);
 	}
 
 	/*******
@@ -1826,10 +1827,10 @@ public class Database {
 	 * </p>
 	 * 
 	 * <p>
-	 * Description: Soft deletes a reply.
+	 * Description: Retrieves the next reply ID.
 	 * </p>
 	 * 
-	 * @return next id of post
+	 * @return next id of a reply in the database
 	 */
 	public long getNextReplyId() {
 	    String query = "SELECT MAX(replyID) FROM Replies";
@@ -1845,4 +1846,52 @@ public class Database {
 	    return 1; // if table is empty
 	}
 	
+	
+	public void insertGrade(String username, String grade, String feedback) throws SQLException {
+		String insertQuery = "INSERT INTO Grades (studentUsername, studentGrade, staffNotes) VALUES (?, ?, ?)";
+		PreparedStatement pstmt = connection.prepareStatement(insertQuery);	
+		pstmt.setString(1, username);
+		pstmt.setString(2, grade);
+		pstmt.setString(3, feedback);
+		pstmt.executeUpdate();
+	}
+	
+	
+	public String searchStudentGrade(String username) throws SQLException {
+		String query = "SELECT studentGrade FROM Grades WHERE studentUsername = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getString("studentGrade"); // Return the grade if student is in list
+			}
+		}
+		
+		return null;
+	}
+	
+	public String searchStudentFeedback(String username) throws SQLException {
+		String query = "SELECT staffNotes FROM Grades WHERE studentUsername = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return rs.getString("staffNotes"); // Return the staff notes if student is in list
+			}
+		}
+		
+		return null;
+	}
+	
+	public void updateGrade(String username, String grade, String feedback) throws SQLException {
+		String query = "UPDATE Grades SET studentGrade = ?, staffNotes = ? WHERE studentUsername = ?";
+		try(PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, grade);
+			pstmt.setString(2, feedback);
+			pstmt.setString(3, username);
+			pstmt.executeUpdate();
+		}
+	}
 }
