@@ -234,6 +234,7 @@ public class ControllerPostReplies {
 	 *   <li>Validates that the post is not deleted</li>
 	 *   <li>Displays error messages if validation fails</li>
 	 *   <li>Refreshes the replies list upon success</li>
+	 *   <li>Displays a character count feature to the user</li>
 	 * </ul>
 	 *
 	 * <p><b>Validation:</b></p>
@@ -341,6 +342,7 @@ public class ControllerPostReplies {
 	 *   <li>Validates user input</li>
 	 *   <li>Displays error messages if validation fails</li>
 	 *   <li>Refreshes replies after editing</li>
+	 *   <li>Displays a character count feature to the user</li>
 	 * </ul>
 	 * 
 	 * <p><b>Requirements:</b></p>
@@ -367,7 +369,33 @@ public class ControllerPostReplies {
 		
 		Label contentLabel = new Label("Content: ");
 		
-		layout.getChildren().addAll(contentLabel, content);
+		// character count label with default value of 0
+		Label label_characterCount = new Label("Characters: 0 / 1000");
+		label_characterCount.setStyle("-fx-text-fill: white;");
+		
+		// real-time update feature of the character count
+		int maxAllowedChars = 1000;
+		content.textProperty().addListener((obsText, oldText, newText) -> {
+			
+			int charLength = newText.length();
+			
+			// stops the user from typing if max char limit reached
+			if(charLength > maxAllowedChars) {
+				content.setText(oldText);
+				return;
+			} 
+			
+			label_characterCount.setText("Characters: " + charLength + " / " + maxAllowedChars);
+			
+			// turns the char counter text red if max limit reached, then back to white if under limit
+			if(charLength == maxAllowedChars) {
+				label_characterCount.setStyle("-fx-text-fill: red;");
+			} else {
+				label_characterCount.setStyle("-fx-text-fill: white;");
+			}
+		});
+		
+		layout.getChildren().addAll(contentLabel, content, label_characterCount);
 		
 		replyDialog.getDialogPane().setContent(layout);
 		replyDialog.getDialogPane().setPrefHeight(300);
@@ -416,6 +444,7 @@ public class ControllerPostReplies {
 	 *   <li>Pre-fills fields with current post data</li>
 	 *   <li>Validates user input</li>
 	 *   <li>Displays error messages if validation fails</li>
+	 *   <li>Displays a character count feature to the user</li>
 	 * </ul>
 	 *
 	 * <p><b>Requirements:</b></p>
@@ -447,7 +476,33 @@ public class ControllerPostReplies {
 		Label titleLabel = new Label("Title: ");
 		Label contentLabel = new Label("Content: ");
 		
-		layout.getChildren().addAll(titleLabel, title, contentLabel, content);
+		// character count label with default value of 0
+		Label label_characterCount = new Label("Characters: 0 / 1000");
+		label_characterCount.setStyle("-fx-text-fill: white;");
+		
+		// real-time update feature of the character count
+		int maxAllowedChars = 1000;
+		content.textProperty().addListener((obsText, oldText, newText) -> {
+			
+			int charLength = newText.length();
+			
+			// stops the user from typing if max char limit reached
+			if(charLength > maxAllowedChars) {
+				content.setText(oldText);
+				return;
+			} 
+			
+			label_characterCount.setText("Characters: " + charLength + " / " + maxAllowedChars);
+			
+			// turns the char counter text red if max limit reached, then back to white if under limit
+			if(charLength == maxAllowedChars) {
+				label_characterCount.setStyle("-fx-text-fill: red;");
+			} else {
+				label_characterCount.setStyle("-fx-text-fill: white;");
+			}
+		});
+		
+		layout.getChildren().addAll(titleLabel, title, contentLabel, content, label_characterCount);
 		
 		postDialog.getDialogPane().setContent(layout);
 		postDialog.getDialogPane().setPrefHeight(300);
