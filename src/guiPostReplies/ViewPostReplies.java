@@ -227,11 +227,10 @@ public class ViewPostReplies {
 		// Ensures all posts have consistent formatting throughout the system.
 		label_PageTitle.setText(ControllerPostReplies.selected.getTitle() + "	#" + 
 				ControllerPostReplies.selected.getPostId());
-		label_PageTitle.setStyle("-fx-font-weight: bold;");
 		
 		// Populates the label with formatted post content retrieved from storage.
 		postLabel.setText(ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
-		postLabel.setStyle("-fx-font-size: 16px");
+		postLabel.setStyle("-fx-font-size: 14px");
 		postLabel.setWrapText(true);
 		postLabel.setPrefWidth(500);
 		

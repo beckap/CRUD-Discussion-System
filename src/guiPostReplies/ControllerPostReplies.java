@@ -133,6 +133,8 @@ public class ControllerPostReplies {
 		// Update the displayed title with post title and ID
 		ViewPostReplies.label_PageTitle.setText(selected.getTitle() + "	#" + 
 				selected.getPostId());
+		ViewPostReplies.postLabel.setText(
+				ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
 		
 		// Add post label
 		ViewPostReplies.postLayout.getChildren().add(ViewPostReplies.postLabel);
@@ -338,6 +340,7 @@ public class ControllerPostReplies {
 
 		TextArea content = new TextArea();
 		content.setText(reply.getContent());
+		content.setWrapText(true);
 		content.setMinWidth(450);
 		content.setPrefRowCount(8);
 		
@@ -444,6 +447,7 @@ public class ControllerPostReplies {
 		title.setMinWidth(450);
 		TextArea content = new TextArea();
 		content.setText(post.getContent());
+		content.setWrapText(true);
 		content.setMinWidth(450);
 		content.setPrefRowCount(8);
 		
