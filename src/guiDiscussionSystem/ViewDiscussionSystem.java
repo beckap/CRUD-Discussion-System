@@ -245,6 +245,7 @@ public class ViewDiscussionSystem {
 								hideContainer.setAlignment(Pos.CENTER);
 
 								CheckBox hideCheckBox = new CheckBox("Hide");
+								hideCheckBox.setStyle("-fx-font-size: 14px");
 								
 								// If visibilityLevel > 0, the post is currently hidden
 								hideCheckBox.setSelected(item.getVisibilityLevel() > 0);

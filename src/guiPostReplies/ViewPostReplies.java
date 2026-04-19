@@ -227,6 +227,7 @@ public class ViewPostReplies {
 		// Ensures all posts have consistent formatting throughout the system.
 		label_PageTitle.setText(ControllerPostReplies.selected.getTitle() + "	#" + 
 				ControllerPostReplies.selected.getPostId());
+		label_PageTitle.setStyle("-fx-font-weight: bold;");
 		
 		// Populates the label with formatted post content retrieved from storage.
 		postLabel.setText(ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
@@ -239,11 +240,11 @@ public class ViewPostReplies {
 		scrollPanePostContent.setPrefHeight(150);
 		scrollPanePostContent.setMaxHeight(150);
 		scrollPanePostContent.setFitToWidth(true);
-		scrollPanePostContent.setPrefWidth(700);
+		scrollPanePostContent.setPrefWidth(750);
 		
 		repliesList.setBackground(Background.EMPTY);
 		repliesList.setPrefHeight(330);
-		repliesList.setMaxWidth(700);
+		repliesList.setMaxWidth(750);
 
 		// Prevents user from replying to a deleted post.
 		// This enforces systems rules and avoids invalid data.

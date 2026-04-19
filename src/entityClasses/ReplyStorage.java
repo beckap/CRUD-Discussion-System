@@ -205,6 +205,7 @@ public class ReplyStorage {
 	 */
 	public List<Reply> getRepliesByPostId(long postId) {
 		postReplies.clear();
+		populateAllReplies();
 		
 		for (Reply reply: replies) {
 			if(reply.isDeleted() && !hasHigherPrivilege(reply.getAuthorUsername())) {
@@ -349,9 +350,9 @@ public class ReplyStorage {
 	 * - Only the author can delete their post
 	 * - Post is not removed, only marked deleted
 	 * </p>
-	 * * @param reply		reply to be deleted
+	 * @param reply		reply to be deleted
 	 * @param user		user using the system
-	 * * @return string to update status and send error messages
+	 * @return string to update status and send error messages
 	 */
 	public String deleteReply(Reply reply, User user) {
 		
@@ -434,9 +435,7 @@ public class ReplyStorage {
 	 * @return content displayed in UI
 	 */
 	public String displayReply(Reply reply) {
-		String author = reply.getAuthorUsername();
-		String content = reply.getContent();
-		return   author + "\t\t\t" + reply.getDatePosted().toLocalDate() + "\n" + content + "\n\n";
+		return reply.getContent();
 	}
 	
 	/*****

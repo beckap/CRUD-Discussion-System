@@ -195,7 +195,6 @@ public class PostStorage {
 		// Filter out deleted posts for users without higher privilege
 		posts.removeIf(post -> post.isDeleted() && !hasHigherPrivilege(post.getAuthorUsername()));
 		
-		System.out.println(posts.size());
 		return posts;
 	}
 	

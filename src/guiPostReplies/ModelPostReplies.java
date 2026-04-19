@@ -3,6 +3,7 @@ package guiPostReplies;
 import java.util.List;
 import entityClasses.Post;
 import entityClasses.Reply;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -12,6 +13,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 /*********
  * <p><b>Class: </b>ModelPostReplies</p>
@@ -85,13 +87,13 @@ public class ModelPostReplies {
 		// This allows combining text content with interactive controls.
 		ViewPostReplies.repliesList.setCellFactory(_ -> new ListCell<Reply>() {
         HBox container = new HBox();
-        Label text = new Label();
         MenuButton threeDots = new MenuButton("...");
 
         {
             MenuItem editItem = new MenuItem("Edit");
             MenuItem deleteItem = new MenuItem("Delete");
             threeDots.getItems().addAll(editItem, deleteItem);
+            threeDots.setStyle("-fx-font-size: 14px;");
 
             editItem.setOnAction(_ -> {
             	Reply currentReply = getItem();
@@ -136,57 +138,67 @@ public class ModelPostReplies {
         @Override
         protected void updateItem(Reply item, boolean empty) {
             super.updateItem(item, empty);
+
             if (empty || item == null) {
                 setGraphic(null);
             } else {
-            	
-            	// Clear previous UI elements to prevent duplication when cells are reused
             	container.getChildren().clear();
             	container.setSpacing(10);
             	container.setAlignment(Pos.CENTER_LEFT);
-            	
-            	// Format reply text for display using storage helper method
-                text.setText(ControllerPostReplies.replyStorage.displayReply(item));
-                text.setStyle("-fx-font-size: 14px");
-                text.setWrapText(true);
-                text.setMaxWidth(600);
-                
-                // Add the text label first
-                container.getChildren().add(text);
-                
-                // Spacer to push controls to the far right side
-                Region spacer = new Region();
-                HBox.setHgrow(spacer, Priority.ALWAYS);
-                container.getChildren().add(spacer);
-            	
-            	if (item.isDeleted()) {
-            		Label deletedLabel = new Label("[DELETED]");
-            		container.getChildren().add(deletedLabel);
-            	} else {
-	            	// Only shows menu for reply owners
-	            	if (item.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
-	            		container.getChildren().add(threeDots);
-	            	}
-	            	
-	            	// Check if the current user has the privilege to hide this specific reply
-	            	if (ControllerPostReplies.canHideReply(ViewPostReplies.theUser, item.getAuthorUsername())) {
-	            		HBox hideContainer = new HBox(5);
-	            		hideContainer.setAlignment(Pos.CENTER);
-	            		
-	            		CheckBox hideCheckBox = new CheckBox("Hide");
-	            		hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
-	            		
-	            		hideCheckBox.setOnAction(_ -> {
-	            			ControllerPostReplies.toggleReplyVisibility(item, hideCheckBox.isSelected());
-	            		});
-	            		
-	            		hideContainer.getChildren().add(hideCheckBox);
-	            		
-	            		// Append the hide container to the right of the dropdown menu
-	            		container.getChildren().add(hideContainer);
-	            	}
-            	}
-            	
+            	container.setPadding(Insets.EMPTY);
+
+            	Label authorLabel = new Label(item.getAuthorUsername());
+            	authorLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+            	Label dateLabel = new Label(item.getDatePosted().toLocalDate().toString());
+            	dateLabel.setStyle("-fx-text-fill: #808388; -fx-font-size: 14px;");
+
+            	HBox header = new HBox(10, authorLabel, dateLabel);
+            	header.setAlignment(Pos.CENTER_LEFT);
+
+            	Label contentLabel = new Label(item.getContent());
+            	contentLabel.setStyle("-fx-font-size: 14px;");
+            	contentLabel.setWrapText(true);
+            	contentLabel.setLineSpacing(2);
+            	contentLabel.setMaxWidth(Double.MAX_VALUE);
+
+            	VBox replyBox = new VBox(5, header, contentLabel);
+            	replyBox.setFillWidth(true);
+            	replyBox.setPadding(new Insets(5, 10, 5, 0));
+            	replyBox.setMaxWidth(Double.MAX_VALUE);
+
+            	container.getChildren().add(replyBox);
+
+            	Region spacer = new Region();
+            	HBox.setHgrow(spacer, Priority.ALWAYS);
+            	container.getChildren().add(spacer);
+
+                if (item.isDeleted()) {
+                    Label deletedLabel = new Label("[DELETED]");
+                    container.getChildren().add(deletedLabel);
+                } else {
+
+                    if (item.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+                        container.getChildren().add(threeDots);
+                    }
+
+                    if (ControllerPostReplies.canHideReply(ViewPostReplies.theUser, item.getAuthorUsername())) {
+                        HBox hideContainer = new HBox(5);
+                        hideContainer.setAlignment(Pos.CENTER);
+
+                        CheckBox hideCheckBox = new CheckBox("Hide");
+                        hideCheckBox.setStyle("-fx-font-size: 14px;");
+                        hideCheckBox.setSelected(item.getVisibilityLevel() > 0);
+
+                        hideCheckBox.setOnAction(_ -> {
+                            ControllerPostReplies.toggleReplyVisibility(item, hideCheckBox.isSelected());
+                        });
+
+                        hideContainer.getChildren().add(hideCheckBox);
+                        container.getChildren().add(hideContainer);
+                    }
+                }
+
                 setGraphic(container);
             }
         }
