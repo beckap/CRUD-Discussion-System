@@ -477,72 +477,6 @@ public class Database {
 			numberOfRoles++;
 		return numberOfRoles;
 	}
-	
-	/*******
-	 * <p>
-	 * Method: int getUserPrivilegeLevel(String username)
-	 * </p>
-	 * * <p>
-	 * Description: Returns the privilege level for a given user.
-	 * 2 for Admin, 1 for Staff, 0 for Student.
-	 * </p>
-	 */
-	public int getUserPrivilegeLevel(String username) {
-		String query = "SELECT adminRole, newRole1, newRole2 FROM userDB WHERE userName = ?";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setString(1, username);
-			ResultSet rs = pstmt.executeQuery();
-			
-			if (rs.next()) {
-				if (rs.getBoolean("adminRole")) return 2; // Admin
-				if (rs.getBoolean("newRole1")) return 1; // Staff
-				return 0; // Student
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return 0; // Default to lowest privilege if user not found
-	}
-	
-	/*******
-	 * <p>
-	 * Method: void updatePostVisibility(long postId, int visibilityLevel)
-	 * </p>
-	 * <p>
-	 * Description: Updates the visibility level of a specific post.
-	 * </p>
-	 * @throws SQLException
-	 * @param postId           id of the post
-	 * @param visibilityLevel  the visibility level
-	 * */
-	public void updatePostVisibility(long postId, int visibilityLevel) throws SQLException {
-		String query = "UPDATE Posts SET visibilityLevel = ? WHERE postID = ?";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setInt(1, visibilityLevel);
-			pstmt.setLong(2, postId);
-			pstmt.executeUpdate();
-		}
-	}
-	
-	/*******
-	 * <p>
-	 * Method: void updateReplyVisibility(long replyId, int visibilityLevel)
-	 * </p>
-	 * <p>
-	 * Description: Updates the visibility level of a specific reply.
-	 * </p>
-	 * @throws SQLException
-	 * @param replyId          id of the reply
-	 * @param visibilityLevel  the visibility level
-	 * */
-	public void updateReplyVisibility(long replyId, int visibilityLevel) throws SQLException {
-		String query = "UPDATE Replies SET visibilityLevel = ? WHERE replyID = ?";
-		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-			pstmt.setInt(1, visibilityLevel);
-			pstmt.setLong(2, replyId);
-			pstmt.executeUpdate();
-		}
-	}
 
 	/*******
 	 * <p>
@@ -724,7 +658,20 @@ public class Database {
 		return false;
 	}
 
-	// TODO: Documentation
+	/**
+	 * <p>
+	 * Method: boolean invitationExists(String email, String role)
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Checks if an invitation exists based on a specified
+	 * email and role
+	 * </p>
+	 * 
+	 * @param email	email to check
+	 * @param role	role of invited user
+	 * @return true if the invitation exists, otherwise false
+	 */
 	public boolean invitationExists(String email, String role) {
 		String query = "SELECT COUNT(*) AS count FROM InvitationCodes WHERE emailAddress = ? AND role = ? AND status = 'Outstanding'";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -1944,6 +1891,72 @@ public class Database {
 			pstmt.setString(1, grade);
 			pstmt.setString(2, feedback);
 			pstmt.setString(3, username);
+			pstmt.executeUpdate();
+		}
+	}
+	
+	/*******
+	 * <p>
+	 * Method: int getUserPrivilegeLevel(String username)
+	 * </p>
+	 * * <p>
+	 * Description: Returns the privilege level for a given user.
+	 * 2 for Admin, 1 for Staff, 0 for Student.
+	 * </p>
+	 */
+	public int getUserPrivilegeLevel(String username) {
+		String query = "SELECT adminRole, newRole1, newRole2 FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			
+			if (rs.next()) {
+				if (rs.getBoolean("adminRole")) return 2; // Admin
+				if (rs.getBoolean("newRole1")) return 1; // Staff
+				return 0; // Student
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0; // Default to lowest privilege if user not found
+	}
+	
+	/*******
+	 * <p>
+	 * Method: void updatePostVisibility(long postId, int visibilityLevel)
+	 * </p>
+	 * <p>
+	 * Description: Updates the visibility level of a specific post.
+	 * </p>
+	 * @throws SQLException
+	 * @param postId           id of the post
+	 * @param visibilityLevel  the visibility level
+	 * */
+	public void updatePostVisibility(long postId, int visibilityLevel) throws SQLException {
+		String query = "UPDATE Posts SET visibilityLevel = ? WHERE postID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, visibilityLevel);
+			pstmt.setLong(2, postId);
+			pstmt.executeUpdate();
+		}
+	}
+	
+	/*******
+	 * <p>
+	 * Method: void updateReplyVisibility(long replyId, int visibilityLevel)
+	 * </p>
+	 * <p>
+	 * Description: Updates the visibility level of a specific reply.
+	 * </p>
+	 * @throws SQLException
+	 * @param replyId          id of the reply
+	 * @param visibilityLevel  the visibility level
+	 * */
+	public void updateReplyVisibility(long replyId, int visibilityLevel) throws SQLException {
+		String query = "UPDATE Replies SET visibilityLevel = ? WHERE replyID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, visibilityLevel);
+			pstmt.setLong(2, replyId);
 			pstmt.executeUpdate();
 		}
 	}
