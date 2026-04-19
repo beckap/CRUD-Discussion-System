@@ -1846,7 +1846,20 @@ public class Database {
 	    return 1; // if table is empty
 	}
 	
-	
+	/**
+	 * <p>
+	 * Method: void insertGrade(String username, String grade, String feedback)
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Inserts a new grade record for a student.
+	 * </p>
+	 *
+	 * @param username	the student's username
+	 * @param grade		the grade to assign
+	 * @param feedback	staff feedback or notes
+	 * @throws SQLException if a database access error occurs
+	 */
 	public void insertGrade(String username, String grade, String feedback) throws SQLException {
 		String insertQuery = "INSERT INTO Grades (studentUsername, studentGrade, staffNotes) VALUES (?, ?, ?)";
 		PreparedStatement pstmt = connection.prepareStatement(insertQuery);	
@@ -1856,7 +1869,20 @@ public class Database {
 		pstmt.executeUpdate();
 	}
 	
-	
+	/**
+	 * <p>
+	 * Method: String searchStudentGrade(String username)
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Retrieves the grade for a given student. If
+	 * student is not in the table, it returns null.
+	 * </p>
+	 *
+	 * @param username	the student's username
+	 * @return the student's grade, or null if not found
+	 * @throws SQLException if a database access error occurs
+	 */
 	public String searchStudentGrade(String username) throws SQLException {
 		String query = "SELECT studentGrade FROM Grades WHERE studentUsername = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -1871,6 +1897,19 @@ public class Database {
 		return null;
 	}
 	
+	/**
+	 * <p>
+	 * Method: String searchStudentFeedback(String username)
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Retrieves staff feedback/notes for a given student.
+	 * </p>
+	 *
+	 * @param username	the student's username
+	 * @return the staff feedback, or null if not found
+	 * @throws SQLException if a database access error occurs
+	 */
 	public String searchStudentFeedback(String username) throws SQLException {
 		String query = "SELECT staffNotes FROM Grades WHERE studentUsername = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -1885,6 +1924,20 @@ public class Database {
 		return null;
 	}
 	
+	/**
+	 * <p>
+	 * Method: void updateGrade(String username, String grade, String feedback)
+	 * </p>
+	 * 
+	 * <p>
+	 * Description: Updates the grade and feedback for a given student.
+	 * </p>
+	 *
+	 * @param username	the student's username
+	 * @param grade		the new grade
+	 * @param feedback	the updated staff feedback, could be empty/null if no feedback given
+	 * @throws SQLException if a database access error occurs
+	 */
 	public void updateGrade(String username, String grade, String feedback) throws SQLException {
 		String query = "UPDATE Grades SET studentGrade = ?, staffNotes = ? WHERE studentUsername = ?";
 		try(PreparedStatement pstmt = connection.prepareStatement(query)) {
