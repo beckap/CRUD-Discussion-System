@@ -144,27 +144,37 @@ public class ControllerPostReplies {
 			Label deletedLabel = new Label("[DELETED]");
 			ViewPostReplies.postLayout.getChildren().add(deletedLabel);
 		} else {
-			MenuItem editPost = new MenuItem("Edit");
-			MenuItem deletePost = new MenuItem("Delete");
-			
-			// Actually hook up actions so clicking delete does something!!!!
-			editPost.setOnAction(_ -> performEditPost(selected));
-			deletePost.setOnAction(_ -> {
-				String errorMessage = postStorage.deletePost(selected, ViewPostReplies.theUser);
-				if (errorMessage != null && !errorMessage.isEmpty()) {
-					ViewPostReplies.deleteError.setTitle("Deletion Error");
-					ViewPostReplies.deleteError.setHeaderText(null);
-					ViewPostReplies.deleteError.setContentText(errorMessage);
-					ViewPostReplies.deleteError.showAndWait();
-				} else {
-					performReturn(); // Return to the discussion board once deleted
-				}
-			});
+			MenuButton threeDotsPost = new MenuButton("...");
 
-			MenuButton threeDotsPost = new MenuButton("...", null, editPost, deletePost);
+			if (selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+				MenuItem editPost = new MenuItem("Edit");
+				editPost.setOnAction(_ -> performEditPost(selected));
+				threeDotsPost.getItems().add(editPost);
+			}
 
-			// Only show edit/delete to the actual author
-			if(selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+			if (canDeletePost(ViewPostReplies.theUser, selected)) {
+				MenuItem deletePost = new MenuItem("Delete");
+				deletePost.setOnAction(_ -> {
+					String errorMessage = postStorage.deletePost(selected, ViewPostReplies.theUser);
+					if (errorMessage != null && !errorMessage.isEmpty()) {
+						ViewPostReplies.deleteError.setTitle("Deletion Error");
+						ViewPostReplies.deleteError.setHeaderText(null);
+						ViewPostReplies.deleteError.setContentText(errorMessage);
+						ViewPostReplies.deleteError.showAndWait();
+					} else {
+						performReturn();
+					}
+				});
+				threeDotsPost.getItems().add(deletePost);
+			}
+
+			if (!selected.getAuthorUsername().equals(ViewPostReplies.theUser.getUserName())) {
+				MenuItem reportPost = new MenuItem("Report");
+				reportPost.setOnAction(_ -> performReportPost(selected));
+				threeDotsPost.getItems().add(reportPost);
+			}
+
+			if (!threeDotsPost.getItems().isEmpty()) {
 				ViewPostReplies.postLayout.getChildren().add(threeDotsPost);
 			}
 			
@@ -402,6 +412,55 @@ public class ControllerPostReplies {
 		content.clear();
 		
 		repaintTheWindow();
+	}
+
+	/**********
+	 * <p>Method: performReportPost(Post post)</p>
+	 *
+	 * <p>Prompts the user for a report reason and stores it for moderation review.</p>
+	 */
+	public static void performReportPost(Post post) {
+		Dialog<String> reportDialog = new Dialog<>();
+		ButtonType reportButton = new ButtonType("Report", ButtonBar.ButtonData.OK_DONE);
+		reportDialog.getDialogPane().getButtonTypes().addAll(reportButton, ButtonType.CANCEL);
+
+		VBox layout = new VBox(10);
+		Label reasonLabel = new Label("Reason for report:");
+		TextArea reason = new TextArea();
+		reason.setWrapText(true);
+		reason.setPrefRowCount(6);
+		reason.setMinWidth(450);
+		layout.getChildren().addAll(reasonLabel, reason);
+
+		reportDialog.getDialogPane().setContent(layout);
+		reportDialog.getDialogPane().setPrefHeight(260);
+		reportDialog.getDialogPane().setPrefWidth(500);
+
+		Button reportAction = (Button) reportDialog.getDialogPane().lookupButton(reportButton);
+		reportAction.addEventFilter(ActionEvent.ACTION, event -> {
+			String errorMessage = postStorage.reportPost(post, ViewPostReplies.theUser, reason.getText());
+			if (!errorMessage.isEmpty()) {
+				ViewPostReplies.reportError.setTitle("Report Error");
+				ViewPostReplies.reportError.setHeaderText(null);
+				ViewPostReplies.reportError.setContentText(errorMessage);
+				ViewPostReplies.reportError.showAndWait();
+				event.consume();
+			}
+		});
+
+		String css = ViewPostReplies.class.getResource("/application.css").toExternalForm();
+		reportDialog.getDialogPane().getStylesheets().add(css);
+		reportDialog.showAndWait();
+	}
+
+	private static boolean canDeletePost(User currentUser, Post post) {
+		if (post == null || currentUser == null) {
+			return false;
+		}
+
+		return currentUser.getAdminRole()
+				|| currentUser.getNewStaffRole()
+				|| post.getAuthorUsername().equals(currentUser.getUserName());
 	}
 	
 	/**********

@@ -103,6 +103,7 @@ public class ViewAdminHome {
 	protected static Button button_DeleteUser = new Button("Delete a User");
 	protected static Button button_ListUsers = new Button("List All Users");
 	protected static Button button_AddRemoveRoles = new Button("Add/Remove Roles");
+	protected static Button button_ReportedPosts = new Button("Reported Posts");
 
 	// This is a separator and it is used to partition the GUI for various tasks
 	private static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -265,6 +266,9 @@ public class ViewAdminHome {
 
 		setupButtonUI(button_AddRemoveRoles, 250, Pos.CENTER, 20, 470);
 		button_AddRemoveRoles.setOnAction((_) -> {ControllerAdminHome.addRemoveRoles(); });
+
+		setupButtonUI(button_ReportedPosts, 250, Pos.CENTER, 300, 270);
+		button_ReportedPosts.setOnAction((_) -> {ControllerAdminHome.reportedPosts(); });
 		
 		// GUI Area 5
 		setupButtonUI(button_Logout, 250, Pos.CENTER, 20, 540);
@@ -301,6 +305,7 @@ public class ViewAdminHome {
     		button_DeleteUser,
     		button_ListUsers,
     		button_AddRemoveRoles,
+	    		button_ReportedPosts,
     		line_Separator4, 
     		button_Logout,
     		button_Quit

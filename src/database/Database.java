@@ -1,11 +1,13 @@
 package database;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import entityClasses.Invitation;
 import entityClasses.Post;
+import entityClasses.PostReport;
 import entityClasses.Reply;
 import entityClasses.User;
 
@@ -148,6 +150,14 @@ public class Database {
 				" authorUsername VARCHAR(255), isEdited BOOL DEFAULT FALSE, isDeleted BOOL DEFAULT FALSE," +
 				" visibilityLevel INT DEFAULT 0, publishTime BIGINT DEFAULT 0)";
 		statement.execute(postsTable);
+
+		String reportsTable = "CREATE TABLE IF NOT EXISTS PostReports ("
+				+ "reportID BIGINT AUTO_INCREMENT PRIMARY KEY, "
+				+ "postID BIGINT NOT NULL, "
+				+ "reason VARCHAR(MAX) NOT NULL, "
+				+ "reporterUsername VARCHAR(255) NOT NULL, "
+				+ "createdAt VARCHAR(255) NOT NULL)";
+		statement.execute(reportsTable);
 		
 		String repliesTable = "CREATE TABLE IF NOT EXISTS Replies (replyID BIGINT AUTO_INCREMENT PRIMARY KEY, postID BIGINT, "
 				+ "creationDate VARCHAR(255)," + " content VARCHAR(MAX), authorUsername VARCHAR(255), " +
@@ -1669,6 +1679,61 @@ public class Database {
 		PreparedStatement pstmt = connection.prepareStatement(query);
 			pstmt.setLong(1, postId);
 			pstmt.executeUpdate();
+	}
+
+	/*******
+	 * <p>
+	 * Method: registerPostReport(long postId, String reason, String reporterUsername)
+	 * </p>
+	 *
+	 * <p>
+	 * Description: Persists a report reason for a specific post.
+	 * </p>
+	 *
+	 * @throws SQLException
+	 */
+	public void registerPostReport(long postId, String reason, String reporterUsername) throws SQLException {
+		String query = "INSERT INTO PostReports (postID, reason, reporterUsername, createdAt) VALUES (?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setLong(1, postId);
+			pstmt.setString(2, reason);
+			pstmt.setString(3, reporterUsername);
+			pstmt.setString(4, LocalDateTime.now().toString());
+			pstmt.executeUpdate();
+		}
+	}
+
+	/*******
+	 * <p>
+	 * Method: getPostReportsList()
+	 * </p>
+	 *
+	 * <p>
+	 * Description: Returns all post reports ordered from newest to oldest.
+	 * </p>
+	 *
+	 * @return list of reported posts with reason and reporter metadata
+	 */
+	public List<PostReport> getPostReportsList() {
+		List<PostReport> reportsList = new ArrayList<>();
+		String query = "SELECT reportID, postID, reason, reporterUsername, createdAt FROM PostReports ORDER BY reportID DESC";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				reportsList.add(new PostReport(
+					rs.getLong("reportID"),
+					rs.getLong("postID"),
+					rs.getString("reason"),
+					rs.getString("reporterUsername"),
+					LocalDateTime.parse(rs.getString("createdAt"))
+				));
+			}
+		} catch (SQLException e) {
+			return new ArrayList<>();
+		}
+
+		return reportsList;
 	}
 	
 	/*******

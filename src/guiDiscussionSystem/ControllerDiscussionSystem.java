@@ -10,6 +10,7 @@ import entityClasses.PostType;
 import entityClasses.ReplyStorage;
 import entityClasses.User;
 import javafx.event.ActionEvent;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -222,6 +223,52 @@ public class ControllerDiscussionSystem {
 
 	/**********
 	 * <p>
+	 * Method: performReportPost(Post post)
+	 * </p>
+	 *
+	 * <p>
+	 * Description: Prompts for a report reason and stores it for staff/admin review.
+	 * </p>
+	 *
+	 * @param post post selected for report
+	 */
+	protected static void performReportPost(Post post) {
+		Dialog<String> reportDialog = new Dialog<>();
+		ButtonType reportButton = new ButtonType("Report", ButtonBar.ButtonData.OK_DONE);
+		reportDialog.getDialogPane().getButtonTypes().addAll(reportButton, ButtonType.CANCEL);
+
+		VBox layout = new VBox(10);
+		Label reasonLabel = new Label("Reason for report:");
+		TextArea reason = new TextArea();
+		reason.setWrapText(true);
+		reason.setMinWidth(450);
+		reason.setPrefRowCount(6);
+		layout.getChildren().addAll(reasonLabel, reason);
+
+		reportDialog.getDialogPane().setContent(layout);
+		reportDialog.getDialogPane().setPrefHeight(260);
+		reportDialog.getDialogPane().setPrefWidth(500);
+
+		Button button = (Button) reportDialog.getDialogPane().lookupButton(reportButton);
+		button.addEventFilter(ActionEvent.ACTION, event -> {
+			String errorMessage = postStorage.reportPost(post, ViewDiscussionSystem.theUser, reason.getText());
+
+			if (!errorMessage.isEmpty()) {
+				ViewDiscussionSystem.reportError.setTitle("Report Error");
+				ViewDiscussionSystem.reportError.setHeaderText(null);
+				ViewDiscussionSystem.reportError.setContentText(errorMessage);
+				ViewDiscussionSystem.reportError.showAndWait();
+				event.consume();
+			}
+		});
+
+		String css = ViewDiscussionSystem.class.getResource("/application.css").toExternalForm();
+		reportDialog.getDialogPane().getStylesheets().add(css);
+		reportDialog.showAndWait();
+	}
+
+	/**********
+	 * <p>
 	 * Method: setupPostSelection() </p>
 	 *
 	 * <p>
@@ -230,7 +277,11 @@ public class ControllerDiscussionSystem {
 	 * </p>
 	 */
 	protected static void setupPostSelection() {
-		ViewDiscussionSystem.postsList.setOnMouseClicked(_ -> {
+		ViewDiscussionSystem.postsList.setOnMouseClicked(event -> {
+			if (event.getTarget() instanceof Node target && isInsideButton(target)) {
+				return;
+			}
+
 			selected = ViewDiscussionSystem.postsList.getSelectionModel().getSelectedItem();
 			if (selected != null) {
 				replyStorage.markRepliesAsRead(selected, ViewDiscussionSystem.theUser);
@@ -239,6 +290,17 @@ public class ControllerDiscussionSystem {
 						ViewDiscussionSystem.theUser, selected, postStorage);
 			}
 		});
+	}
+
+	private static boolean isInsideButton(Node node) {
+		Node current = node;
+		while (current != null) {
+			if (current instanceof Button) {
+				return true;
+			}
+			current = current.getParent();
+		}
+		return false;
 	}
 	
 	/**********

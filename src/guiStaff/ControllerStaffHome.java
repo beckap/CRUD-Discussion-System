@@ -205,6 +205,19 @@ public class ControllerStaffHome {
 	protected static void performGradingDashboard() {
 		guiGradingDashboard.ViewGradingDashboard.displayGradingDashboard(ViewStaffHome.theStage, ViewStaffHome.theUser);
 	}
+
+	/**********
+	 * <p>
+	 * Title: performReportedPosts() Method.
+	 * </p>
+	 *
+	 * <p>
+	 * Description: Displays the reported posts moderation page.
+	 * </p>
+	 */
+	protected static void performReportedPosts() {
+		guiReportPosts.ViewReportPosts.displayReportPosts(ViewStaffHome.theStage, ViewStaffHome.theUser);
+	}
 	
 	/**********
 	 * <p>

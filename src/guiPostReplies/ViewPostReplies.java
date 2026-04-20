@@ -146,6 +146,11 @@ public class ViewPostReplies {
 	 * 
 	 */
 	protected static Alert editError = new Alert(AlertType.INFORMATION);
+
+	/**
+	 * Alert used to notify the user when reporting is not allowed.
+	 */
+	protected static Alert reportError = new Alert(AlertType.INFORMATION);
 	
 	
 	protected static Stage theStage; // The Stage that JavaFX has established for us
@@ -288,6 +293,8 @@ public class ViewPostReplies {
 		error2.getStylesheets().add(css);
 		DialogPane error3 = editError.getDialogPane();
 		error3.getStylesheets().add(css);
+		DialogPane error4 = reportError.getDialogPane();
+		error4.getStylesheets().add(css);
 		
 		// Adds the main layout to the Stage so it is displayed to user.
 		theRootPane.getChildren().addAll(layout);

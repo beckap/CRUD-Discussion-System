@@ -357,7 +357,9 @@ public class PostStorage {
 			return "This post has already been deleted";
 		}
 		
-		if (!post.getAuthorUsername().equals(user.getUserName())) {
+		boolean canDeleteAnyPost = user.getAdminRole() || user.getNewStaffRole();
+
+		if (!canDeleteAnyPost && !post.getAuthorUsername().equals(user.getUserName())) {
 			return "You cannot delete someone else's post";
 		}
 		
@@ -371,6 +373,51 @@ public class PostStorage {
 		}
 		
 		return "";
+	}
+
+	/*****
+	 * Saves a report entry for the selected post.
+	 *
+	 * @param post post being reported
+	 * @param reporter user submitting the report
+	 * @param reason free-text reason for the report
+	 * @return empty string on success, otherwise an error message
+	 */
+	public String reportPost(Post post, User reporter, String reason) {
+		if (post == null) {
+			return "Post does not exist";
+		}
+
+		if (post.isDeleted()) {
+			return "Cannot report a deleted post";
+		}
+
+		if (reason == null || reason.trim().isEmpty()) {
+			return "Please provide a reason for the report";
+		}
+
+		String normalizedReason = reason.trim();
+		if (normalizedReason.length() > 500) {
+			return "Reason is too large";
+		}
+
+		try {
+			theDatabase.registerPostReport(post.getPostId(), normalizedReason, reporter.getUserName());
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return "Error saving report";
+		}
+
+		return "";
+	}
+
+	/*****
+	 * Returns all post reports (for moderation use).
+	 *
+	 * @return list of reports with post ID and reason
+	 */
+	public List<PostReport> getAllPostReports() {
+		return theDatabase.getPostReportsList();
 	}
 	
 	/*****

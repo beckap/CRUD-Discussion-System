@@ -92,6 +92,7 @@ public class ViewDiscussionSystem {
 												// is needed
 	
 	protected static Alert postError = new Alert(AlertType.INFORMATION);
+	protected static Alert reportError = new Alert(AlertType.INFORMATION);
 
 	protected static Stage theStage; // The Stage that JavaFX has established for us
 	protected static Pane theRootPane; // The Pane that holds all the GUI widgets
@@ -236,6 +237,13 @@ public class ViewDiscussionSystem {
 
 							cellLayout.getChildren().addAll(textLabel, spacer);
 
+							if (!item.isDeleted() && !item.getAuthorUsername().equals(theUser.getUserName())) {
+								Button reportButton = new Button("Report");
+								reportButton.setMinWidth(90);
+								reportButton.setOnAction(_ -> ControllerDiscussionSystem.performReportPost(item));
+								cellLayout.getChildren().add(reportButton);
+							}
+
 							if (item.isDeleted()) {
 								Label deletedLabel = new Label("[DELETED]");
 								cellLayout.getChildren().add(deletedLabel);
@@ -287,6 +295,8 @@ public class ViewDiscussionSystem {
 		
 		DialogPane error1 = postError.getDialogPane();
 		error1.getStylesheets().add(css);
+		DialogPane error2 = reportError.getDialogPane();
+		error2.getStylesheets().add(css);
 		
 		theRootPane.getChildren().addAll(label_PageTitle, filterHbox, searchHbox, scrollPane_Posts, createPost, button_Return);
 		theStage.setScene(theDiscussionSystemScene);

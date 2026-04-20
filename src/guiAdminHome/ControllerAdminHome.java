@@ -199,6 +199,20 @@ public class ControllerAdminHome {
 
 	/**********
 	 * <p>
+	 *
+	 * Title: reportedPosts () Method.
+	 * </p>
+	 *
+	 * <p>
+	 * Description: Opens the reported posts moderation page.
+	 * </p>
+	 */
+	protected static void reportedPosts() {
+		guiReportPosts.ViewReportPosts.displayReportPosts(ViewAdminHome.theStage, ViewAdminHome.theUser);
+	}
+
+	/**********
+	 * <p>
 	 * 
 	 * Title: invalidEmailAddress () Method.
 	 * </p>

@@ -101,6 +101,11 @@ public class ViewStaffHome {
 	 * This button is used to access the grading dashboard page
 	 */
 	protected static Button button_Grading = new Button("Grading Dashboard");
+
+	/***
+	 * This button opens the reported posts moderation page.
+	 */
+	protected static Button button_ReportedPosts = new Button("Reported Posts");
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width - 20, 525);
 
@@ -268,6 +273,11 @@ public class ViewStaffHome {
 			ControllerStaffHome.performGradingDashboard();
 		});
 
+		setupButtonUI(button_ReportedPosts, 250, Pos.CENTER, 300, 480);
+		button_ReportedPosts.setOnAction((_) -> {
+			ControllerStaffHome.performReportedPosts();
+		});
+
 		// GUI Area 3
 		setupButtonUI(button_Logout, 250, Pos.CENTER, 20, 540);
 		button_Logout.setOnAction((_) -> {
@@ -299,6 +309,7 @@ public class ViewStaffHome {
 				label_Invitations, label_InvitationEmailAddress, text_InvitationEmailAddress,
 	    		combobox_SelectRole, button_SendInvitation, line_Separator3, line_Separator4, 
 	    		button_SetOnetimePassword, button_Discussion, button_ListUsers, button_Grading,
+	    		button_ReportedPosts,
 				button_Logout, button_Quit);
 	}
 

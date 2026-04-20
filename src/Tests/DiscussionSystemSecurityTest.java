@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import database.Database;
 import entityClasses.Post;
 import entityClasses.PostCategory;
+import entityClasses.PostReport;
 import entityClasses.PostStorage;
 import entityClasses.PostType;
 import entityClasses.Reply;
@@ -29,6 +32,10 @@ import entityClasses.User;
  * Covers critical authorization and boundary behavior for discussion posts
  * and replies, including invalid input handling and message ID limits.
  * </p>
+ *
+ * @author Diogo Moscato
+ * @version 1.0
+ * @since 17/04
  */
 public class DiscussionSystemSecurityTest {
 
@@ -188,6 +195,45 @@ public class DiscussionSystemSecurityTest {
         assertEquals("Reply does not exist", result);
     }
 
+    /**
+     * Test #8: Report reason is persisted for moderation.
+     */
+    @Test
+    @DisplayName("DS.8 Report reason is saved")
+    void testReportReasonIsSaved() {
+        FakeDiscussionDatabase fakeDb = new FakeDiscussionDatabase();
+        PostStorage postStorage = new PostStorage(fakeDb);
+
+        User reporter = makeUser("studentA", true, false, false);
+        Post targetPost = new Post(22L, PostType.POST, "Original", PostCategory.GENERAL, "Body", "studentB");
+
+        String result = postStorage.reportPost(targetPost, reporter, "Contains harassment");
+
+        assertEquals("", result);
+        assertEquals(1, fakeDb.reports.size());
+        assertEquals(22L, fakeDb.reports.get(0).getPostId());
+        assertEquals("Contains harassment", fakeDb.reports.get(0).getReason());
+    }
+
+    /**
+     * Test #9: Staff can delete another user's post.
+     */
+    @Test
+    @DisplayName("DS.9 Staff can delete another user's post")
+    void testStaffCanDeleteAnotherUsersPost() {
+        FakeDiscussionDatabase fakeDb = new FakeDiscussionDatabase();
+        PostStorage postStorage = new PostStorage(fakeDb);
+
+        User staff = makeUser("staffA", false, true, false);
+        Post targetPost = new Post(44L, PostType.POST, "Original", PostCategory.GENERAL, "Body", "studentB");
+
+        String result = postStorage.deletePost(targetPost, staff);
+
+        assertEquals("", result);
+        assertTrue(fakeDb.deletePostCalled);
+        assertTrue(targetPost.isDeleted());
+    }
+
     private static User makeUser(String username, boolean studentRole, boolean staffRole, boolean adminRole) {
         User user = new User();
         user.setUserName(username);
@@ -199,8 +245,10 @@ public class DiscussionSystemSecurityTest {
 
     private static class FakeDiscussionDatabase extends Database {
         private List<Reply> replies = Collections.emptyList();
+        private List<PostReport> reports = new ArrayList<>();
         private boolean updatePostCalled = false;
         private boolean updateReplyCalled = false;
+        private boolean deletePostCalled = false;
 
         @Override
         public List<Reply> getRepliesList() {
@@ -215,6 +263,22 @@ public class DiscussionSystemSecurityTest {
         @Override
         public void updateReply(Long replyId, String content) {
             updateReplyCalled = true;
+        }
+
+        @Override
+        public void registerPostReport(long postId, String reason, String reporterUsername) {
+            long reportId = reports.size() + 1L;
+            reports.add(new PostReport(reportId, postId, reason, reporterUsername, LocalDateTime.now()));
+        }
+
+        @Override
+        public List<PostReport> getPostReportsList() {
+            return reports;
+        }
+
+        @Override
+        public void deletePost(long postId, String deleteMessage) {
+            deletePostCalled = true;
         }
     }
 

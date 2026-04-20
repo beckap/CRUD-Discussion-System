@@ -24,6 +24,20 @@ import javafx.application.Platform;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
+/**
+ * <p><b>Class:</b> ControllerUserLoginTest
+ * </p>
+ *
+ * <p><b>Responsibilities:</b></p>
+ * <p>
+ * Validates login controller behavior for denied and successful authentication
+ * paths, including role dispatch behavior and invalid credential handling.
+ * </p>
+ *
+ * @author Diogo Moscato
+ * @version 1.0
+ * @since 17/04
+ */
 public class ControllerUserLoginTest {
 
     @BeforeAll
