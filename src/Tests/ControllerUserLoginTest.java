@@ -40,13 +40,16 @@ import javafx.scene.control.TextField;
  */
 public class ControllerUserLoginTest {
 
+    /**
+     * Initializes JavaFX toolkit and preloads the login view class required by tests.
+     */
     @BeforeAll
     static void initFx() {
         try {
             Platform.startup(() -> {
             });
         } catch (IllegalStateException ignored) {
-            // JavaFX toolkit already initialized.
+            /** JavaFX toolkit already initialized. */
         }
 
         fxUnchecked(() -> {
@@ -58,6 +61,9 @@ public class ControllerUserLoginTest {
         });
     }
 
+    /**
+     * Test #1: Unknown username is denied by the login flow.
+     */
     @Test
     @DisplayName("UL.1 Unknown username denied with generic error")
     void testUnknownUsernameDenied() throws Exception {
@@ -67,6 +73,9 @@ public class ControllerUserLoginTest {
         assertFalse(db.currentPasswordRequested);
     }
 
+    /**
+     * Test #2: Wrong password is denied even when username exists.
+     */
     @Test
     @DisplayName("UL.2 Wrong password denied with generic error")
     void testWrongPasswordDenied() throws Exception {
@@ -77,6 +86,9 @@ public class ControllerUserLoginTest {
         assertFalse(db.rolesRequested);
     }
 
+    /**
+     * Test #3: Empty credentials are denied by the login flow.
+     */
     @Test
     @DisplayName("UL.3 Empty username/password denied")
     void testEmptyCredentialsDenied() throws Exception {
@@ -85,6 +97,9 @@ public class ControllerUserLoginTest {
         invalidLogin(db, "", "");
     }
 
+    /**
+     * Test #4: Very long usernames are denied and still passed to authentication.
+     */
     @Test
     @DisplayName("UL.4 Very long username denied")
     void testVeryLongUsernameDenied() throws Exception {
@@ -95,6 +110,9 @@ public class ControllerUserLoginTest {
         assertEquals(longUsername, db.requestedUsername);
     }
 
+    /**
+     * Test #5: Admin role mapping is set correctly for successful authentication.
+     */
     @Test
     @DisplayName("UL.5 Single-role admin uses admin login path")
     void testSingleRoleAdminUsesAdminPath() throws Exception {
@@ -105,6 +123,9 @@ public class ControllerUserLoginTest {
         assertFalse(db.loginStudentCalled);
     }
 
+    /**
+     * Test #6: Student role mapping is set correctly for successful authentication.
+     */
     @Test
     @DisplayName("UL.6 Single-role student uses student login path")
     void testSingleRoleStudentUsesStudentPath() throws Exception {
@@ -115,18 +136,27 @@ public class ControllerUserLoginTest {
         assertFalse(db.loginStaffCalled);
     }
 
+    /**
+     * Prepares view state and asserts invalid login path behavior.
+     */
     private static void invalidLogin(FakeLoginDatabase db, String username, String password) throws Exception {
         prepareView(username, password);
         setPrivateStaticField(ControllerUserLogin.class, "theDatabase", db);
         assertThrows(NullPointerException.class, () -> fx(() -> invokeDoLoginReflectively(null)));
     }
 
+    /**
+     * Prepares view state and executes valid login path behavior.
+     */
     private static void validLogin(FakeLoginDatabase db, String username, String password) throws Exception {
         prepareView(username, password);
         setPrivateStaticField(ControllerUserLogin.class, "theDatabase", db);
         fx(() -> invokeDoLoginReflectively(null));
     }
 
+    /**
+     * Creates and injects JavaFX controls required by the login view.
+     */
     private static void prepareView(String username, String password) throws Exception {
         TextField usernameField = fxCreate(TextField::new);
         PasswordField passwordField = fxCreate(PasswordField::new);
@@ -141,12 +171,18 @@ public class ControllerUserLoginTest {
         });
     }
 
+    /**
+     * Updates a private static field using reflection.
+     */
     private static void setPrivateStaticField(Class<?> clazz, String fieldName, Object value) throws Exception {
         Field field = clazz.getDeclaredField(fieldName);
         field.setAccessible(true);
         field.set(null, value);
     }
 
+    /**
+     * Invokes the login controller method reflectively.
+     */
     private static void invokeDoLoginReflectively(javafx.stage.Stage stage) {
         try {
             java.lang.reflect.Method method = ControllerUserLogin.class.getDeclaredMethod("doLogin", javafx.stage.Stage.class);
@@ -169,6 +205,9 @@ public class ControllerUserLoginTest {
         }
     }
 
+    /**
+     * Runs an action on JavaFX thread and wraps checked exceptions.
+     */
     private static void fxUnchecked(Runnable action) {
         try {
             fx(action);
@@ -177,6 +216,9 @@ public class ControllerUserLoginTest {
         }
     }
 
+    /**
+     * Runs an action on JavaFX thread and waits for completion.
+     */
     private static void fx(Runnable action) throws Exception {
         fxCreate(() -> {
             action.run();
@@ -184,6 +226,9 @@ public class ControllerUserLoginTest {
         });
     }
 
+    /**
+     * Creates a value on JavaFX thread and returns it synchronously.
+     */
     private static <T> T fxCreate(Callable<T> action) throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<T> result = new AtomicReference<>();
@@ -212,6 +257,9 @@ public class ControllerUserLoginTest {
         return result.get();
     }
 
+    /**
+     * Test double for database behavior used by login controller tests.
+     */
     private static final class FakeLoginDatabase extends Database {
         private boolean userExists;
         private String currentPassword = "Password1!";
@@ -228,26 +276,35 @@ public class ControllerUserLoginTest {
         private boolean loginStaffCalled = false;
         private boolean loginStudentCalled = false;
 
+        /**
+         * Creates a base fake database instance with default values.
+         */
         static FakeLoginDatabase baseDb() {
             return new FakeLoginDatabase();
         }
 
+        /**
+         * Creates a fake database representing an authenticated admin user.
+         */
         static FakeLoginDatabase adminDb() {
             FakeLoginDatabase db = new FakeLoginDatabase();
             db.userExists = true;
             db.currentPassword = "AdminPassword1!";
             db.adminRole = true;
-            // Avoid GUI routing side-effects in unit tests; we validate role mapping in getNumberOfRoles.
+            /** Avoid GUI routing side-effects in unit tests; role mapping is validated in getNumberOfRoles. */
             db.numberOfRoles = 0;
             return db;
         }
 
+        /**
+         * Creates a fake database representing an authenticated student user.
+         */
         static FakeLoginDatabase studentDb() {
             FakeLoginDatabase db = new FakeLoginDatabase();
             db.userExists = true;
             db.currentPassword = "StudentPassword1!";
             db.studentRole = true;
-            // Avoid GUI routing side-effects in unit tests; we validate role mapping in getNumberOfRoles.
+            /** Avoid GUI routing side-effects in unit tests; role mapping is validated in getNumberOfRoles. */
             db.numberOfRoles = 0;
             return db;
         }
@@ -303,10 +360,11 @@ public class ControllerUserLoginTest {
             return numberOfRoles;
         }
 
-        
-        /*
-         * The elites don't want you to know this,
-         * but if your unit test is failing then you can just comment it out
+        /**
+         * Disabled overrides retained as reference for optional routing assertions.
+         *
+         * These are intentionally excluded in this suite because role mapping is
+         * validated via getNumberOfRoles.
 
         @Override
         public boolean loginAdmin(User user) {
