@@ -363,7 +363,7 @@ public class ControllerPostReplies {
 		Label contentLabel = new Label("Content: ");
 		
 		// character count label with default value of 0
-		Label label_characterCount = new Label("Characters: 0 / 1000");
+		Label label_characterCount = new Label("Characters: " + content.getText().length() + "/ 1000");
 		label_characterCount.setStyle("-fx-text-fill: white;");
 		
 		// real-time update feature of the character count
@@ -522,7 +522,7 @@ public class ControllerPostReplies {
 		Label contentLabel = new Label("Content: ");
 		
 		// character count label with default value of 0
-		Label label_characterCount = new Label("Characters: 0 / 1000");
+		Label label_characterCount = new Label("Characters: " +  content.getText().length() + "/ 1000");
 		label_characterCount.setStyle("-fx-text-fill: white;");
 		
 		// real-time update feature of the character count

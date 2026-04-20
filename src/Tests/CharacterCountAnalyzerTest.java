@@ -1,6 +1,8 @@
 package Tests;
 
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import entityClasses.CharacterCountAnalyzer;
 
 /**
  * <p><b>Class:</b> CharacterCountAnalyzerTest (JUnit)
@@ -32,11 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Genesee Harmon
  * @version 1.0 Created with documentation
  */
-
-import org.junit.jupiter.api.Test;
-
-import entityClasses.CharacterCountAnalyzer;
-
 class CharacterCountAnalyzerTest {
 
 	/**
