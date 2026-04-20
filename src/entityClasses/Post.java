@@ -329,22 +329,38 @@ public class Post {
 		
 	}
 
-	// TODO JavaDoc
+	/**
+	 * <p>Method: getVisibilityLevel()</p>
+	 * <p>Description: Returns the visibilityLevel</p>
+	 * @return The visibilityLevel
+	 */
 	public int getVisibilityLevel() {
 		return this.visibilityLevel;
 	}
 
-	// TODO JavaDoc
+	/**
+	 * <p>Method: getPublishTime()</p>
+	 * <p>Description: Returns the publishTime</p>
+	 * @return The publishTime
+	 */
 	public long getPublishTime() {
 		return this.publishTime;
 	}
 	
-	// TODO JavaDoc
+	/**
+	 * <p>Method: setVisibilityLevel(int visibilityLevel)</p>
+	 * <p>Description: Sets the visibilityLevel</p>
+	 * @param The visibility level
+	 */
 	public void setVisibilityLevel(int visibilityLevel) {
 		this.visibilityLevel = visibilityLevel;
 	}
 
-	// TODO JavaDoc
+	/**
+	 * <p>Method: setPublishTime(long publishTime)</p>
+	 * <p>Description: Sets the publish time in UNIX milliseconds</p>
+	 * @param The publish time
+	 */
 	public void setPublishTime(long publishTime) {
 		this.publishTime = publishTime;
 	}
