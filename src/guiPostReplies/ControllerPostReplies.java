@@ -400,6 +400,8 @@ public class ControllerPostReplies {
 		ModelPostReplies.refreshRepliesList(selected);
 		
 		content.clear();
+		
+		repaintTheWindow();
 	}
 	
 	/**********
@@ -509,6 +511,8 @@ public class ControllerPostReplies {
 		
 		content.clear();
 		title.clear();
+		
+		repaintTheWindow();
 	}
 	
 	/**********

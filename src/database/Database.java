@@ -1576,24 +1576,78 @@ public class Database {
 	 * <p>
 	 * Method: void updatePost(Long postId, String title, String content)
 	 * </p>
-	 * 
 	 * <p>
-	 * Description: Update the title and content of a post.
+	 * Description: Duplicates the old state of the post and all its replies behind the scenes, 
+	 * marks them as deleted, and updates the post with the new edits.
 	 * </p>
-	 * 
-	 * @throws SQLExecption
+	 * @throws SQLException
 	 * @param postId	id of post
 	 * @param title		new title
 	 * @param content	new content
-	 * 
 	 */
 	public void updatePost(Long postId, String title, String content) throws SQLException {
-		String query = "UPDATE Posts SET title = ?, content = ?, isEdited = TRUE WHERE postID = ?";
-		PreparedStatement pstmt = connection.prepareStatement(query);
+		String fetchPost = "SELECT * FROM Posts WHERE postID = ?";
+		long historyPostId = -1;
+		
+		// Create duplicate of post and all replies and mark as deleted
+		try (PreparedStatement pstmt = connection.prepareStatement(fetchPost)) {
+			pstmt.setLong(1, postId);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				String insertOldPost = "INSERT INTO Posts (creationDate, postType, title, postCategory, content, authorUsername, isEdited, isDeleted, visibilityLevel, publishTime) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, ?, ?)";
+				try (PreparedStatement insertStmt = connection.prepareStatement(insertOldPost, Statement.RETURN_GENERATED_KEYS)) {
+					insertStmt.setString(1, rs.getString("creationDate"));
+					insertStmt.setString(2, rs.getString("postType"));
+					insertStmt.setString(3, rs.getString("title"));
+					insertStmt.setString(4, rs.getString("postCategory"));
+					insertStmt.setString(5, rs.getString("content"));
+					insertStmt.setString(6, rs.getString("authorUsername"));
+					insertStmt.setBoolean(7, rs.getBoolean("isEdited"));
+					insertStmt.setInt(8, rs.getInt("visibilityLevel"));
+					insertStmt.setLong(9, rs.getLong("publishTime"));
+					insertStmt.executeUpdate();
+					
+					ResultSet keys = insertStmt.getGeneratedKeys();
+					if (keys.next()) {
+						historyPostId = keys.getLong(1);
+					}
+				}
+			}
+		}
+
+		// Duplicate all replies and link them to the deleted clone
+		if (historyPostId != -1) {
+			String fetchReplies = "SELECT * FROM Replies WHERE postID = ?";
+			try (PreparedStatement pstmt = connection.prepareStatement(fetchReplies)) {
+				pstmt.setLong(1, postId);
+				ResultSet rs = pstmt.executeQuery();
+				
+				String insertOldReply = "INSERT INTO Replies (postID, creationDate, content, authorUsername, isEdited, isDeleted, isReadByPostAuthor, visibilityLevel, publishTime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				try (PreparedStatement insertStmt = connection.prepareStatement(insertOldReply)) {
+					while (rs.next()) {
+						insertStmt.setLong(1, historyPostId);
+						insertStmt.setString(2, rs.getString("creationDate"));
+						insertStmt.setString(3, rs.getString("content"));
+						insertStmt.setString(4, rs.getString("authorUsername"));
+						insertStmt.setBoolean(5, rs.getBoolean("isEdited"));
+						insertStmt.setBoolean(6, rs.getBoolean("isDeleted"));
+						insertStmt.setBoolean(7, rs.getBoolean("isReadByPostAuthor"));
+						insertStmt.setInt(8, rs.getInt("visibilityLevel"));
+						insertStmt.setLong(9, rs.getLong("publishTime"));
+						insertStmt.executeUpdate();
+					}
+				}
+			}
+		}
+
+		// Update the post with the new edited content as mark as isEdited
+		String updateActivePost = "UPDATE Posts SET title = ?, content = ?, isEdited = TRUE WHERE postID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(updateActivePost)) {
 			pstmt.setString(1, title);
 			pstmt.setString(2, content);
 			pstmt.setLong(3, postId);
 			pstmt.executeUpdate();
+		}
 	}
 
 	/*******
@@ -1708,22 +1762,44 @@ public class Database {
 	 * <p>
 	 * Method: void updateReply(Long replyId, String content)
 	 * </p>
-	 * 
 	 * <p>
-	 * Description: Update the
+	 * Description: Duplicates the old state of the reply behind the scenes, marks it as deleted, 
+	 * and updates the active reply with the new edits.
 	 * </p>
-	 * 
-	 * @throws SQLExecption
+	 * @throws SQLException
 	 * @param replyId	id of reply
 	 * @param content	new content
-	 * 
 	 */
 	public void updateReply(Long replyId, String content) throws SQLException {
-		String query = "UPDATE Replies SET content = ?, isEdited = TRUE, isReadByPostAuthor = FALSE WHERE replyID = ?";
-		PreparedStatement pstmt = connection.prepareStatement(query);
+		String fetchReply = "SELECT * FROM Replies WHERE replyID = ?";
+		
+		// Create duplicate reply and mark it as deleted
+		try (PreparedStatement pstmt = connection.prepareStatement(fetchReply)) {
+			pstmt.setLong(1, replyId);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) {
+				String insertOldReply = "INSERT INTO Replies (postID, creationDate, content, authorUsername, isEdited, isDeleted, isReadByPostAuthor, visibilityLevel, publishTime) VALUES (?, ?, ?, ?, ?, TRUE, ?, ?, ?)";
+				try (PreparedStatement insertStmt = connection.prepareStatement(insertOldReply)) {
+					insertStmt.setLong(1, rs.getLong("postID"));
+					insertStmt.setString(2, rs.getString("creationDate"));
+					insertStmt.setString(3, rs.getString("content"));
+					insertStmt.setString(4, rs.getString("authorUsername"));
+					insertStmt.setBoolean(5, rs.getBoolean("isEdited"));
+					insertStmt.setBoolean(6, rs.getBoolean("isReadByPostAuthor"));
+					insertStmt.setInt(7, rs.getInt("visibilityLevel"));
+					insertStmt.setLong(8, rs.getLong("publishTime"));
+					insertStmt.executeUpdate();
+				}
+			}
+		}
+
+		// Update the reply with the new edited content as mark as isEdited
+		String updateActiveReply = "UPDATE Replies SET content = ?, isEdited = TRUE, isReadByPostAuthor = FALSE WHERE replyID = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(updateActiveReply)) {
 			pstmt.setString(1, content);
 			pstmt.setLong(2, replyId);
 			pstmt.executeUpdate();
+		}
 	}
 
 	/*******
