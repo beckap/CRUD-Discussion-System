@@ -67,6 +67,25 @@ public class ViewPostReplies {
 	 * </p>
 	 */
 	protected static Label label_PageTitle = new Label();
+	
+	/**
+	 * Label used for post author and date
+	 */
+	protected static Label labelPostAuthor = new Label();
+	
+	/**
+	 * Label used for post author and date
+	 */
+	protected static Label labelPostDate = new Label();
+	
+	/**
+	 * HBox to set the post layout
+	 */
+	protected static HBox postInfoLayout = new HBox(10);
+	
+	/**
+	 * HBox to set the post layout
+	 */
 	protected static HBox postLayout = new HBox(20);
 	
 	/**
@@ -109,12 +128,18 @@ public class ViewPostReplies {
 	 */
 	protected static Button createReply = new Button("Create Reply");
 	
+	/**
+	 * Button that allows the user to return to the previous page
+	 */
 	protected static Button button_Return = new Button("Return");
 
 	private static ViewPostReplies theView;
 	
-	// Main layout container organizing all UI elements vertically.
-	// Provides consistent spacing and alignment for the page.
+	/**
+	 * Main layout container organizing all UI elements vertically.
+	 * Provides consistent spacing and alignment for the page.
+	 * 
+	 */
 	protected static VBox layout = new VBox();
 	
 	/**
@@ -232,7 +257,17 @@ public class ViewPostReplies {
 		// Ensures all posts have consistent formatting throughout the system.
 		label_PageTitle.setText(ControllerPostReplies.selected.getTitle() + "	#" + 
 				ControllerPostReplies.selected.getPostId());
+		label_PageTitle.setStyle("-fx-font-size: 27px;");
+		setupLabelUI(label_PageTitle, width, Pos.BASELINE_LEFT, 0, 5); 
 		
+		labelPostAuthor.setText(ControllerPostReplies.selected.getAuthorUsername());
+		labelPostAuthor.setStyle("-fx-font-size: 14px;");
+		labelPostDate.setText(ControllerPostReplies.selected.getDate().toLocalDate().toString());
+		labelPostDate.setStyle("-fx-font-size: 14px; -fx-text-fill: #808388;");
+		
+		postInfoLayout.getChildren().addAll(labelPostAuthor, labelPostDate);
+		postInfoLayout.setLayoutX(0);
+		postInfoLayout.setLayoutY(15);
 		// Populates the label with formatted post content retrieved from storage.
 		postLabel.setText(ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
 		postLabel.setStyle("-fx-font-size: 14px");
@@ -275,7 +310,8 @@ public class ViewPostReplies {
 		button_Return.setMaxWidth(150);
 		createReply.setMaxWidth(150);
 
-		layout.getChildren().addAll(label_PageTitle, scrollPanePostContent, repliesList, buttonLayout);
+		layout.getChildren().addAll(label_PageTitle, postInfoLayout, scrollPanePostContent, 
+				repliesList, buttonLayout);
 		layout.setPadding(new Insets(20));
 		layout.setAlignment(Pos.TOP_CENTER);
 		layout.setLayoutX(0);
@@ -303,6 +339,21 @@ public class ViewPostReplies {
 		
 	}
 
+	/**********
+	 * Private local method to initialize the standard fields for a label
+	 * 
+	 * @param l  The Label object to be initialized
+	 * @param w  The width of the Button
+	 * @param p  The alignment (e.g. left, centered, or right)
+	 * @param x  The location from the left edge (x axis)
+	 * @param y  The location from the top (y axis)
+	 */
+	private static void setupLabelUI(Label l, double w, Pos p, double x, double y) {
+		l.setMinWidth(w);
+		l.setAlignment(p);
+		l.setLayoutX(x);
+		l.setLayoutY(y);
+	}
 
 	/**********
 	 * Private local method to initialize the standard fields for a button

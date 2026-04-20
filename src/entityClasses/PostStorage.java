@@ -479,10 +479,8 @@ public class PostStorage {
 	 * @return content that is displayed in UI
 	 */
 	public String displayPost(Post post) {
-		String author = post.getAuthorUsername();
-		String content = post.getContent();
-		
-		return author + "\t\t" + post.getDate().toLocalDate() + "\n\n" + content;
+		String content = post.getContent();	
+		return content;
 	}
 	
 	/*****

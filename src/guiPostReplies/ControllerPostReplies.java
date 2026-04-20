@@ -129,12 +129,18 @@ public class ControllerPostReplies {
 	protected static void repaintTheWindow() {
 		// Prevent duplicates
 		ViewPostReplies.postLayout.getChildren().clear();
+		ViewPostReplies.postInfoLayout.getChildren().clear();
 		
 		// Update the displayed title with post title and ID
 		ViewPostReplies.label_PageTitle.setText(selected.getTitle() + "	#" + 
 				selected.getPostId());
-		ViewPostReplies.postLabel.setText(
-				ControllerPostReplies.postStorage.displayPost(ControllerPostReplies.selected));
+		
+		// Update post info and content
+		ViewPostReplies.postLabel.setText(postStorage.displayPost(selected));
+		ViewPostReplies.labelPostAuthor.setText(selected.getAuthorUsername());
+		ViewPostReplies.labelPostDate.setText(selected.getDate().toLocalDate().toString());
+		ViewPostReplies.postInfoLayout.getChildren().addAll(ViewPostReplies.labelPostAuthor, 
+				ViewPostReplies.labelPostDate);
 		
 		// Add post label
 		ViewPostReplies.postLayout.getChildren().add(ViewPostReplies.postLabel);

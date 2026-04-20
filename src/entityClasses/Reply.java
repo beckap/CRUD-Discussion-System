@@ -225,26 +225,6 @@ public class Reply {
 	public LocalDateTime getDatePosted() {
 		return datePosted;
 	}
-	
-	// TODO JavaDoc
-	public int getVisibilityLevel() {
-		return this.visibilityLevel;
-	}
-
-	// TODO JavaDoc
-	public long getPublishTime() {
-		return this.publishTime;
-	}
-	
-	// TODO JavaDoc
-	public void setVisibilityLevel(int visibilityLevel) {
-		this.visibilityLevel = visibilityLevel;
-	}
-
-	// TODO JavaDoc
-	public void setPublishTime(long publishTime) {
-		this.publishTime = publishTime;
-	}
 
 	/*****
 	 * <p>
@@ -334,4 +314,23 @@ public class Reply {
 		this.replyId = long1;
 	}
 	
+	// TODO JavaDoc
+	public int getVisibilityLevel() {
+		return this.visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public long getPublishTime() {
+		return this.publishTime;
+	}
+	
+	// TODO JavaDoc
+	public void setVisibilityLevel(int visibilityLevel) {
+		this.visibilityLevel = visibilityLevel;
+	}
+
+	// TODO JavaDoc
+	public void setPublishTime(long publishTime) {
+		this.publishTime = publishTime;
+	}
 }
