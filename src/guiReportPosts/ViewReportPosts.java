@@ -19,7 +19,14 @@ import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 /**
- * Report moderation page for Staff/Admin users.
+ * JavaFX view for moderation of reported posts.
+ *
+ * <p>This view builds the moderation interface, enforces access restrictions at
+ * entry point level, and delegates actions to the controller.</p>
+ *
+ * @author Diogo Moscato
+ * @version 1.0
+ * @since 17 April 2026
  */
 public class ViewReportPosts {
     private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
@@ -39,6 +46,12 @@ public class ViewReportPosts {
 
     public static Scene theReportPostsScene;
 
+    /**
+     * Displays the reported-posts moderation page for the provided user and stage.
+     *
+     * @param ps stage where this scene will be shown
+     * @param user currently authenticated user
+     */
     public static void displayReportPosts(Stage ps, User user) {
         theStage = ps;
         theUser = user;
@@ -60,6 +73,9 @@ public class ViewReportPosts {
         ControllerReportPosts.repaintTheWindow();
     }
 
+    /**
+     * Initializes static UI widgets and event handlers for the reported-posts page.
+     */
     private ViewReportPosts() {
         theRootPane = new Pane();
         theReportPostsScene = new Scene(theRootPane, width, height);
@@ -120,6 +136,15 @@ public class ViewReportPosts {
         theStage.show();
     }
 
+    /**
+     * Applies common label layout configuration.
+     *
+     * @param l label to configure
+     * @param w minimum width
+     * @param p alignment value
+     * @param x horizontal layout position
+     * @param y vertical layout position
+     */
     private static void setupLabelUI(Label l, double w, Pos p, double x, double y) {
         l.setMinWidth(w);
         l.setAlignment(p);
@@ -127,6 +152,15 @@ public class ViewReportPosts {
         l.setLayoutY(y);
     }
 
+    /**
+     * Applies common button layout configuration.
+     *
+     * @param b button to configure
+     * @param w minimum width
+     * @param p alignment value
+     * @param x horizontal layout position
+     * @param y vertical layout position
+     */
     private static void setupButtonUI(Button b, double w, Pos p, double x, double y) {
         b.setMinWidth(w);
         b.setAlignment(p);

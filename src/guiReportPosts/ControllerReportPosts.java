@@ -9,12 +9,23 @@ import entityClasses.PostStorage;
 import entityClasses.User;
 
 /**
- * Controller actions for the Reported Posts moderation page.
+ * Coordinates interactions for the Reported Posts moderation page.
+ *
+ * <p>This controller validates access to moderation actions, refreshes the page state,
+ * handles post deletion from selected reports, and routes users back to their active
+ * home screen.</p>
+ *
+ * @author Diogo Moscato
+ * @version 1.0
+ * @since 17 April 2026
  */
 public class ControllerReportPosts {
     private static Database theDatabase = applicationMain.FoundationsMain.database;
     protected static PostStorage postStorage = new PostStorage(theDatabase);
 
+    /**
+     * Rebuilds and displays the moderation window based on the current user permissions.
+     */
     protected static void repaintTheWindow() {
         ViewReportPosts.theRootPane.getChildren().clear();
         ModelReportPosts.refreshReportsList();
@@ -43,10 +54,22 @@ public class ControllerReportPosts {
         ViewReportPosts.theStage.show();
     }
 
+    /**
+     * Determines whether a user has permission to view and moderate reported posts.
+     *
+     * @param user user whose roles are evaluated
+     * @return {@code true} when user is Admin or Staff; otherwise {@code false}
+     */
     protected static boolean canViewReports(User user) {
         return user != null && (user.getAdminRole() || user.getNewStaffRole());
     }
 
+    /**
+     * Deletes the post associated with the currently selected report, when permitted.
+     *
+     * <p>If access is denied, no report is selected, the target post cannot be found,
+     * or deletion fails, the method shows an appropriate alert and leaves state unchanged.</p>
+     */
     protected static void performDeleteSelectedPost() {
         if (!canViewReports(ViewReportPosts.theUser)) {
             ViewReportPosts.reportActionError.setTitle("Access denied");
@@ -92,6 +115,9 @@ public class ControllerReportPosts {
         ViewReportPosts.reportActionError.showAndWait();
     }
 
+    /**
+     * Returns the user to the correct previous screen based on the active home page index.
+     */
     protected static void performReturn() {
         int activeHomePage = applicationMain.FoundationsMain.activeHomePage;
 
@@ -114,6 +140,12 @@ public class ControllerReportPosts {
         }
     }
 
+    /**
+     * Locates a post by its unique identifier in the current post collection.
+     *
+     * @param postId unique post id referenced by a report
+     * @return matching post, or {@code null} when no post has that id
+     */
     private static Post findPostById(long postId) {
         List<Post> allPosts = postStorage.getAllPosts();
         for (Post post : allPosts) {
